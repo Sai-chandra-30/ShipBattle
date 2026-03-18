@@ -39,3 +39,18 @@ board mid-game.
 - Power-ups feel random and not tied to strategy
 - No unique ship abilities, every ship plays the same
 - UI could be more polished and modern
+
+---
+
+### 3. Inspiration Images
+<img width="1247" height="769" alt="Screenshot 2026-03-18 174605" src="https://github.com/user-attachments/assets/c32ad495-6af8-426c-9873-aa1addc6d60c" />
+What the ship setup screen could look like
+
+<img width="858" height="600" alt="Screenshot 2026-03-18 174646" src="https://github.com/user-attachments/assets/6066768f-689c-47bf-b7fe-0465da01152f" />
+
+What the attacking screen could look like (minus the coordinates)
+
+<img width="708" height="1022" alt="Screenshot 2026-03-18 174725" src="https://github.com/user-attachments/assets/324e8a2e-7321-40c2-b9a4-ca94335399ad" />
+
+What the powerup selection UI could look like
+
