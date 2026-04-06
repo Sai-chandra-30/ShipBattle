@@ -18,18 +18,18 @@ public enum Cell {
             case FRIGATE:    return "F";
             case HIT:        return "✕";
             case MISS:       return "○";
-            default:         return "~";
+            default:         return " ";
         }
     }
  
     // Returns the hex background color for this cell
     public String getColor() {
         switch (this) {
-            case CARRIER:    return "#1c8eb7ff";
-            case BATTLESHIP: return "#8bb71cff";
-            case DESTROYER:  return "#b71c76ff";
-            case SUBMARINE:  return "#1c43b7ff";
-            case FRIGATE:    return "#f9a216ff";
+            case CARRIER:    return "#F4A636";
+            case BATTLESHIP: return "#E8D44D";
+            case DESTROYER:  return "#9be3a6ff";
+            case SUBMARINE:  return "#C97FE8";
+            case FRIGATE:    return "#F47B6E";
             case HIT:        return "#B71C1C";
             case MISS:       return "#ECEFF1";
             default:         return "#ffffffd5";
@@ -38,6 +38,6 @@ public enum Cell {
 
     // Returns white text for dark backgrounds, dark text for light
     public String getTextColor() {
-        return (this == WATER || this == MISS) ? "#37474F" : "white";
+        return (this == WATER || this == MISS) ? "#000000ff" : "white";
     }
-}
+} 

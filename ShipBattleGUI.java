@@ -65,7 +65,7 @@ public class ShipBattleGUI extends Application {
         boardsBox.setPadding(new Insets(10, 24, 20, 24));
 
         VBox root = new VBox(topBox, boardsBox);
-        root.setStyle("-fx-background-color: #2B2B2B;");
+        root.setStyle("-fx-background-color: #232222f5;");
 
         updateBoard(playerBoard, playerButtons);
         updateBoard(botBoard, botButtons);
@@ -76,13 +76,13 @@ public class ShipBattleGUI extends Application {
         stage.show();
     }
 
-    // builds the grid for either board, interactive controls whether clicking does anything
+    // builds the grid for boards
     private GridPane buildGrid(Button[][] buttons, boolean interactive) {
         GridPane grid = new GridPane();
         grid.setHgap(2);
         grid.setVgap(2);
         grid.setPadding(new Insets(4));
-        grid.setStyle("-fx-background-color: #546E7A; -fx-background-radius: 4;");
+        grid.setStyle("-fx-background-color: #000000ff; -fx-background-radius: 4;");
 
         // column numbers along the top
         for (int col = 0; col < 10; col++) {
@@ -149,7 +149,7 @@ public class ShipBattleGUI extends Application {
         }
     }
 
-    // colors the dropdown to match each ship, had to do this twice for the open list and closed button
+    // colors the dropdown to match each ship
     private void styleComboBox(ComboBox<String> box) {
         box.setCellFactory(lv -> new ListCell<String>() {
             @Override
@@ -191,7 +191,7 @@ public class ShipBattleGUI extends Application {
             case "Destroyer":  return Cell.DESTROYER.getColor();
             case "Submarine":  return Cell.SUBMARINE.getColor();
             case "Frigate":    return Cell.FRIGATE.getColor();
-            default:           return "#37474F";
+            default:           return "#d5f2ffff";
         }
     }
 
