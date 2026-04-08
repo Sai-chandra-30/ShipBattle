@@ -1,3 +1,6 @@
+# Java compiled output
+*.class
+
 # Logs
 logs
 *.log
