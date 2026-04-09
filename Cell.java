@@ -11,14 +11,9 @@ public enum Cell {
     // Returns the single-character symbol for this cell
     public String getSymbol() {
         switch (this) {
-            case CARRIER:    return "C";
-            case BATTLESHIP: return "B";
-            case DESTROYER:  return "D";
-            case SUBMARINE:  return "S";
-            case FRIGATE:    return "F";
-            case HIT:        return "✕";
-            case MISS:       return "○";
-            default:         return " ";
+            case HIT:  return "✕";
+            case MISS: return "○";
+            default:   return " ";
         }
     }
  

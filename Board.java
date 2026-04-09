@@ -123,4 +123,76 @@ public class Board {
     public Cell getCell(int row, int col) {
         return board[row][col];
     }
+
+    // Returns the ship length for a given ship name
+    public static int getShipLength(String shipName) {
+        switch (shipName) {
+            case "Carrier":    return 5;
+            case "Battleship": return 4;
+            case "Destroyer":  return 3;
+            case "Submarine":  return 3;
+            case "Frigate":    return 2;
+            default:           return 0;
+        }
+    }
+
+    // Exposes private canPlaceShip for drag-and-drop preview validation
+    public boolean canPlaceShipPublic(int row, int col, int length, boolean vertical) {
+        return canPlaceShip(row, col, length, vertical);
+    }
+
+    // Places a ship at the given coord with explicit orientation; returns true if successful
+    public boolean addShipByNameOriented(String coord, String shipName, boolean vertical) {
+        int length = getShipLength(shipName);
+        Cell type = nameToCell(shipName);
+        if (length == 0 || type == null) return false;
+        if (!verifyCoord(coord)) return false;
+        int[] pos = parseCoord(coord);
+        int x = pos[0], y = pos[1];
+        if (!canPlaceShip(x, y, length, vertical)) return false;
+        if (vertical) {
+            for (int i = 0; i < length; i++) board[x + i][y] = type;
+        } else {
+            for (int i = 0; i < length; i++) board[x][y + i] = type;
+        }
+        return true;
+    }
+
+    // Returns the ship display name at (row, col), or null if not a ship
+    public String getShipName(int row, int col) {
+        return cellToName(board[row][col]);
+    }
+
+    // Removes all cells of the ship at (row, col); returns ship name or null
+    public String removeShipAt(int row, int col) {
+        Cell c = board[row][col];
+        if (c == Cell.WATER || c == Cell.HIT || c == Cell.MISS) return null;
+        String name = cellToName(c);
+        for (int i = 0; i < SIZE; i++)
+            for (int j = 0; j < SIZE; j++)
+                if (board[i][j] == c) board[i][j] = Cell.WATER;
+        return name;
+    }
+
+    private Cell nameToCell(String shipName) {
+        switch (shipName) {
+            case "Carrier":    return Cell.CARRIER;
+            case "Battleship": return Cell.BATTLESHIP;
+            case "Destroyer":  return Cell.DESTROYER;
+            case "Submarine":  return Cell.SUBMARINE;
+            case "Frigate":    return Cell.FRIGATE;
+            default:           return null;
+        }
+    }
+
+    private String cellToName(Cell c) {
+        switch (c) {
+            case CARRIER:    return "Carrier";
+            case BATTLESHIP: return "Battleship";
+            case DESTROYER:  return "Destroyer";
+            case SUBMARINE:  return "Submarine";
+            case FRIGATE:    return "Frigate";
+            default:         return null;
+        }
+    }
 }
