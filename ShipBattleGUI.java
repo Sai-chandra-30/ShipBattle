@@ -40,6 +40,10 @@ public class ShipBattleGUI extends Application {
     private FlowPane shipTray;
     private Button orientationToggle;
 
+    // Other buttons
+    private Button randomizeButton;
+    private Button startButton;
+
     @Override
     public void start(Stage stage) {
 
@@ -99,11 +103,38 @@ public class ShipBattleGUI extends Application {
             e.consume();
         });
 
+        // Randomize button
+        randomizeButton = new Button("RANDOMIZE");
+        randomizeButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        randomizeButton.setStyle(
+                "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        randomizeButton.setOnAction(e -> {
+            playerBoard = RandomShip.makeShip();
+            updateBoard(playerBoard, playerButtons);
+        });
+
+        // Start button
+        startButton = new Button("START");
+        startButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        startButton.setStyle(
+                "-fx-background-color: #4A890C; -fx-text-fill: white;" +
+                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        startButton.setOnAction(e -> {
+            //Do nothing for now.
+        });
+
         HBox trayControls = new HBox(12, trayLabel, orientationToggle);
         trayControls.setAlignment(Pos.CENTER_LEFT);
         trayControls.setPadding(new Insets(8, 0, 0, 0));
 
-        VBox playerSide = new VBox(6, playerLabel, playerGrid, trayControls, shipTray);
+        HBox bottomRow = new HBox(12, randomizeButton, startButton);
+        bottomRow.setAlignment(Pos.CENTER_LEFT);
+        bottomRow.setPadding(new Insets(8, 0, 0, 0));
+
+        VBox playerSide = new VBox(6, playerLabel, playerGrid, trayControls, shipTray, bottomRow);
         playerSide.setAlignment(Pos.CENTER_LEFT);
 
         // --- BOT side ---
