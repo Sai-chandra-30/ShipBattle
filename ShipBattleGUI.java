@@ -113,6 +113,11 @@ public class ShipBattleGUI extends Application {
         randomizeButton.setOnAction(e -> {
             playerBoard = RandomShip.makeShip();
             updateBoard(playerBoard, playerButtons);
+            hideFromTray("Carrier");
+            hideFromTray("Battleship");
+            hideFromTray("Destroyer");
+            hideFromTray("Submarine");
+            hideFromTray("Frigate");
         });
 
         // Start button
