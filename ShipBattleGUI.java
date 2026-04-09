@@ -36,7 +36,7 @@ public class ShipBattleGUI extends Application {
     private final List<int[]> highlightedCells = new ArrayList<>();
 
     // Ship tray
-    private final Map<String, HBox> shipTrayItems = new LinkedHashMap<>();
+    private final Map<String, VBox> shipTrayItems = new LinkedHashMap<>();
     private FlowPane shipTray;
     private Button orientationToggle;
 
@@ -137,19 +137,18 @@ public class ShipBattleGUI extends Application {
         shipTray.getChildren().clear();
         shipTrayItems.clear();
         for (String ship : new String[]{"Carrier", "Battleship", "Destroyer", "Submarine", "Frigate"}) {
-            HBox item = buildTrayShip(ship);
+            VBox item = buildTrayShip(ship);
             shipTrayItems.put(ship, item);
             shipTray.getChildren().add(item);
         }
     }
 
-    private HBox buildTrayShip(String shipName) {
+    private VBox buildTrayShip(String shipName) {
         int length = Board.getShipLength(shipName);
         String color = shipNameToColor(shipName);
 
-        HBox box = new HBox(2);
-        box.setAlignment(Pos.CENTER);
-        box.setStyle("-fx-cursor: hand;");
+        HBox cells = new HBox(2);
+        cells.setAlignment(Pos.CENTER);
 
         for (int i = 0; i < length; i++) {
             Pane cell = new Pane();
@@ -162,8 +161,16 @@ public class ShipBattleGUI extends Application {
                 "-fx-background-color: " + color + ";" +
                 "-fx-background-radius: " + radius + ";"
             );
-            box.getChildren().add(cell);
+            cells.getChildren().add(cell);
         }
+
+        Label nameLabel = new Label(shipName);
+        nameLabel.setFont(Font.font("Georgia", FontWeight.BOLD, 11));
+        nameLabel.setTextFill(Color.rgb(200, 200, 200));
+
+        VBox box = new VBox(4, cells, nameLabel);
+        box.setAlignment(Pos.CENTER);
+        box.setStyle("-fx-cursor: hand;");
 
         box.setOnDragDetected(e -> {
             draggingShipName = shipName;
@@ -186,7 +193,7 @@ public class ShipBattleGUI extends Application {
     }
 
     private void hideFromTray(String shipName) {
-        HBox item = shipTrayItems.get(shipName);
+        VBox item = shipTrayItems.get(shipName);
         if (item != null) {
             item.setVisible(false);
             item.setManaged(false);
@@ -194,7 +201,7 @@ public class ShipBattleGUI extends Application {
     }
 
     private void showInTray(String shipName) {
-        HBox item = shipTrayItems.get(shipName);
+        VBox item = shipTrayItems.get(shipName);
         if (item != null) {
             item.setVisible(true);
             item.setManaged(true);
