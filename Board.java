@@ -18,6 +18,10 @@ public class Board {
         }
     }
 
+    public Cell[][] getBoard() {
+        return board;
+    }
+
     private int[] parseCoord(String coord) {
         coord = coord.toUpperCase();
         int row = coord.charAt(0) - 'A';
