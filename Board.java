@@ -123,6 +123,10 @@ public class Board {
     public Cell getCell(int row, int col) {
         return board[row][col];
     }
+    // Sets the cell to the given state
+    public void setCell(int row, int col, Cell c) {
+        board[row][col] = c;
+    }
 
     // Returns the ship length for a given ship name
     public static int getShipLength(String shipName) {
