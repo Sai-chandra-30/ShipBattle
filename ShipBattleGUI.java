@@ -149,7 +149,7 @@ public class ShipBattleGUI extends Application {
 
         GridPane botGrid = buildGrid(botButtons, false);
         VBox botSide = new VBox(6, botLabel, botGrid);
-        botSide.setAlignment(Pos.CENTER);
+        botSide.setAlignment(Pos.TOP_LEFT);
 
         HBox boardsBox = new HBox(40, playerSide, botSide);
         boardsBox.setAlignment(Pos.TOP_CENTER);
