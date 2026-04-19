@@ -87,8 +87,8 @@ public class Main {
         else {
             b1 = RandomShip.makeShip();
         }
-        b1.displayBoardShips();
-
+        //b1.displayBoardShips();
+        GameManager.playGame(b1, RandomShip.makeShip());
         scnr.close();
     }
 }
