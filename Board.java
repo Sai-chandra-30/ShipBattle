@@ -199,4 +199,37 @@ public class Board {
             default:         return null;
         }
     }
+
+    // Fires at (row, col); returns true if it hit a ship
+    public boolean fireAt(int row, int col) {
+        Cell c = board[row][col];
+        if (c == Cell.HIT || c == Cell.MISS) return false;
+        if (c != Cell.WATER) {
+            board[row][col] = Cell.HIT;
+            return true;
+        }
+        board[row][col] = Cell.MISS;
+        return false;
+    }
+
+    // Returns true if every ship cell has been hit
+    public boolean allShipsSunk() {
+        for (int i = 0; i < SIZE; i++)
+            for (int j = 0; j < SIZE; j++) {
+                Cell c = board[i][j];
+                if (c != Cell.WATER && c != Cell.HIT && c != Cell.MISS)
+                    return false;
+            }
+        return true;
+    }
+
+    // Returns all cells that have not been fired at yet
+    public List<int[]> getUnfiredCells() {
+        List<int[]> cells = new ArrayList<>();
+        for (int i = 0; i < SIZE; i++)
+            for (int j = 0; j < SIZE; j++)
+                if (board[i][j] != Cell.HIT && board[i][j] != Cell.MISS)
+                    cells.add(new int[]{i, j});
+        return cells;
+    }
 }

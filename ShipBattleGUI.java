@@ -1,3 +1,4 @@
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -10,10 +11,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class ShipBattleGUI extends Application {
 
@@ -39,10 +42,17 @@ public class ShipBattleGUI extends Application {
     private final Map<String, VBox> shipTrayItems = new LinkedHashMap<>();
     private FlowPane shipTray;
     private Button orientationToggle;
-
-    // Other buttons
     private Button randomizeButton;
     private Button startButton;
+
+    // Game state
+    private boolean gameStarted = false;
+    private boolean playerTurn = true;
+    private final Random random = new Random();
+
+    // Status labels
+    private Label playerStatusLabel;  // below player board — shows bot's action
+    private Label botStatusLabel;     // below bot board — shows player's turn status
 
     @Override
     public void start(Stage stage) {
@@ -55,14 +65,14 @@ public class ShipBattleGUI extends Application {
         topBox.setAlignment(Pos.CENTER);
         topBox.setPadding(new Insets(16, 0, 10, 0));
 
-        // --- PLAYER side ---
+        // ── PLAYER side ────────────────────────────────────────────────────────
+
         Label playerLabel = new Label("PLAYER");
         playerLabel.setFont(Font.font("Georgia", FontWeight.BOLD, BASE_FONT));
         playerLabel.setTextFill(Color.WHITE);
 
         GridPane playerGrid = buildGrid(playerButtons, true);
 
-        // Orientation toggle
         orientationToggle = new Button("HORIZONTAL");
         orientationToggle.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
         orientationToggle.setStyle(
@@ -74,7 +84,6 @@ public class ShipBattleGUI extends Application {
             orientationToggle.setText(isVertical ? "VERTICAL" : "HORIZONTAL");
         });
 
-        // Ship tray below player board
         Label trayLabel = new Label("unplaced ships");
         trayLabel.setFont(Font.font("Georgia", FontWeight.BOLD, 13));
         trayLabel.setTextFill(Color.rgb(180, 180, 180));
@@ -84,7 +93,6 @@ public class ShipBattleGUI extends Application {
         shipTray.setPrefWrapLength(520);
         buildShipTrayItems();
 
-        // Tray is a drop zone — ships dragged off the board return here
         shipTray.setOnDragOver(e -> {
             if (e.getDragboard().hasString() && dragFromBoard)
                 e.acceptTransferModes(TransferMode.MOVE);
@@ -103,33 +111,36 @@ public class ShipBattleGUI extends Application {
             e.consume();
         });
 
-        // Randomize button
         randomizeButton = new Button("RANDOMIZE");
         randomizeButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
         randomizeButton.setStyle(
-                "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
-                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+            "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+            "-fx-background-radius: 4; -fx-padding: 4 10;"
         );
         randomizeButton.setOnAction(e -> {
             playerBoard = RandomShip.makeShip();
             updateBoard(playerBoard, playerButtons);
-            hideFromTray("Carrier");
-            hideFromTray("Battleship");
-            hideFromTray("Destroyer");
-            hideFromTray("Submarine");
-            hideFromTray("Frigate");
+            for (String ship : shipTrayItems.keySet()) hideFromTray(ship);
         });
 
-        // Start button
-        startButton = new Button("START");
+        startButton = new Button("START GAME");
         startButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
         startButton.setStyle(
-                "-fx-background-color: #4A890C; -fx-text-fill: white;" +
-                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+            "-fx-background-color: #4A890C; -fx-text-fill: white;" +
+            "-fx-background-radius: 4; -fx-padding: 4 10;"
         );
         startButton.setOnAction(e -> {
-            //Do nothing for now.
+            if (!allShipsPlaced()) {
+                playerStatusLabel.setText("Place all 5 ships first!");
+                return;
+            }
+            startGame();
         });
+
+        playerStatusLabel = new Label("");
+        playerStatusLabel.setFont(Font.font("Georgia", FontWeight.BOLD, 13));
+        playerStatusLabel.setTextFill(Color.rgb(220, 220, 220));
+        playerStatusLabel.setPadding(new Insets(6, 0, 0, 0));
 
         HBox trayControls = new HBox(12, trayLabel, orientationToggle);
         trayControls.setAlignment(Pos.CENTER_LEFT);
@@ -139,17 +150,27 @@ public class ShipBattleGUI extends Application {
         bottomRow.setAlignment(Pos.CENTER_LEFT);
         bottomRow.setPadding(new Insets(8, 0, 0, 0));
 
-        VBox playerSide = new VBox(6, playerLabel, playerGrid, trayControls, shipTray, bottomRow);
+        VBox playerSide = new VBox(6, playerLabel, playerGrid, playerStatusLabel,
+                                   trayControls, shipTray, bottomRow);
         playerSide.setAlignment(Pos.CENTER_LEFT);
 
-        // --- BOT side ---
+        // ── BOT side ───────────────────────────────────────────────────────────
+
         Label botLabel = new Label("BOT");
         botLabel.setFont(Font.font("Georgia", FontWeight.BOLD, BASE_FONT));
         botLabel.setTextFill(Color.WHITE);
 
         GridPane botGrid = buildGrid(botButtons, false);
-        VBox botSide = new VBox(6, botLabel, botGrid);
+
+        botStatusLabel = new Label("");
+        botStatusLabel.setFont(Font.font("Georgia", FontWeight.BOLD, 13));
+        botStatusLabel.setTextFill(Color.rgb(220, 220, 220));
+        botStatusLabel.setPadding(new Insets(6, 0, 0, 0));
+
+        VBox botSide = new VBox(6, botLabel, botGrid, botStatusLabel);
         botSide.setAlignment(Pos.TOP_LEFT);
+
+        // ── Root layout ────────────────────────────────────────────────────────
 
         HBox boardsBox = new HBox(40, playerSide, botSide);
         boardsBox.setAlignment(Pos.TOP_CENTER);
@@ -159,12 +180,109 @@ public class ShipBattleGUI extends Application {
         root.setStyle("-fx-background-color: #232222f5;");
 
         updateBoard(playerBoard, playerButtons);
-        updateBoard(botBoard, botButtons);
+        updateBotBoardForPlayer();
 
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle("Ship Battle");
         stage.show();
+    }
+
+    // ── Game Logic ─────────────────────────────────────────────────────────────
+
+    private boolean allShipsPlaced() {
+        for (VBox item : shipTrayItems.values())
+            if (item.isVisible()) return false;
+        return true;
+    }
+
+    private void startGame() {
+        gameStarted = true;
+        playerTurn = true;
+
+        // Place bot ships randomly
+        botBoard = RandomShip.makeShip();
+        updateBotBoardForPlayer();
+
+        // Lock placement UI
+        orientationToggle.setDisable(true);
+        randomizeButton.setDisable(true);
+        startButton.setDisable(true);
+        shipTray.setOnDragOver(null);
+        shipTray.setOnDragDropped(null);
+
+        // Enable bot board for clicking
+        setBotBoardEnabled(true);
+
+        playerStatusLabel.setText("");
+        botStatusLabel.setText("YOUR TURN — click a cell on the bot's board");
+    }
+
+    private void onBotCellClicked(int row, int col) {
+        if (!gameStarted || !playerTurn) return;
+        Cell c = botBoard.getCell(row, col);
+        if (c == Cell.HIT || c == Cell.MISS) return; // already fired here
+
+        playerTurn = false;
+        setBotBoardEnabled(false);
+
+        boolean hit = botBoard.fireAt(row, col);
+        updateBotBoardForPlayer();
+
+        if (hit) {
+            botStatusLabel.setText("YOU HIT a bot ship!");
+        } else {
+            botStatusLabel.setText("YOU MISSED.");
+        }
+
+        if (botBoard.allShipsSunk()) {
+            playerStatusLabel.setText("");
+            botStatusLabel.setText("YOU WIN! All bot ships sunk!");
+            gameStarted = false;
+            return;
+        }
+
+        playerStatusLabel.setText("BOT'S TURN — waiting...");
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(1.2));
+        pause.setOnFinished(ev -> botFire());
+        pause.play();
+    }
+
+    private void botFire() {
+        List<int[]> unfired = playerBoard.getUnfiredCells();
+        if (unfired.isEmpty()) return;
+
+        int[] target = unfired.get(random.nextInt(unfired.size()));
+        boolean hit = playerBoard.fireAt(target[0], target[1]);
+        updateBoard(playerBoard, playerButtons);
+
+        if (hit) {
+            playerStatusLabel.setText("BOT HIT YOUR SHIP!");
+        } else {
+            playerStatusLabel.setText("BOT MISSED.");
+        }
+
+        if (playerBoard.allShipsSunk()) {
+            playerStatusLabel.setText("BOT WINS! All your ships are sunk.");
+            gameStarted = false;
+            return;
+        }
+
+        playerTurn = true;
+        setBotBoardEnabled(true);
+        botStatusLabel.setText("YOUR TURN — click a cell on the bot's board");
+    }
+
+    private void setBotBoardEnabled(boolean enabled) {
+        for (int r = 0; r < 10; r++) {
+            for (int c = 0; c < 10; c++) {
+                Cell cell = botBoard.getCell(r, c);
+                boolean alreadyFired = (cell == Cell.HIT || cell == Cell.MISS);
+                botButtons[r][c].setDisable(!enabled || alreadyFired);
+                botButtons[r][c].setOpacity(1.0);
+            }
+        }
     }
 
     // ── Ship Tray ──────────────────────────────────────────────────────────────
@@ -209,6 +327,7 @@ public class ShipBattleGUI extends Application {
         box.setStyle("-fx-cursor: hand;");
 
         box.setOnDragDetected(e -> {
+            if (gameStarted) { e.consume(); return; }
             draggingShipName = shipName;
             dragFromBoard = false;
             dragIsVertical = isVertical;
@@ -230,18 +349,12 @@ public class ShipBattleGUI extends Application {
 
     private void hideFromTray(String shipName) {
         VBox item = shipTrayItems.get(shipName);
-        if (item != null) {
-            item.setVisible(false);
-            item.setManaged(false);
-        }
+        if (item != null) { item.setVisible(false); item.setManaged(false); }
     }
 
     private void showInTray(String shipName) {
         VBox item = shipTrayItems.get(shipName);
-        if (item != null) {
-            item.setVisible(true);
-            item.setManaged(true);
-        }
+        if (item != null) { item.setVisible(true); item.setManaged(true); }
     }
 
     // ── Board Grid ─────────────────────────────────────────────────────────────
@@ -281,6 +394,9 @@ public class ShipBattleGUI extends Application {
                     attachBoardDragSource(btn, r, c);
                     attachDropHandlers(btn, r, c);
                 } else {
+                    // Bot board: click handler set now, disabled until game starts
+                    int r = row, c = col;
+                    btn.setOnAction(e -> onBotCellClicked(r, c));
                     btn.setDisable(true);
                     btn.setOpacity(1.0);
                 }
@@ -297,20 +413,18 @@ public class ShipBattleGUI extends Application {
 
     private void attachBoardDragSource(Button btn, int row, int col) {
         btn.setOnDragDetected(e -> {
+            if (gameStarted) { e.consume(); return; }
             Cell cell = playerBoard.getCell(row, col);
             if (cell == Cell.WATER || cell == Cell.HIT || cell == Cell.MISS) {
-                e.consume();
-                return;
+                e.consume(); return;
             }
             String shipName = playerBoard.getShipName(row, col);
             if (shipName == null) { e.consume(); return; }
 
-            // Detect orientation: vertical if any neighbor above/below has same cell type
             boolean vertical =
                 (row + 1 < 10 && playerBoard.getCell(row + 1, col) == cell) ||
                 (row - 1 >= 0 && playerBoard.getCell(row - 1, col) == cell);
 
-            // Find anchor (topmost cell if vertical, leftmost if horizontal)
             int anchorRow = row, anchorCol = col;
             if (vertical) {
                 while (anchorRow > 0 && playerBoard.getCell(anchorRow - 1, col) == cell) anchorRow--;
@@ -350,10 +464,8 @@ public class ShipBattleGUI extends Application {
         btn.setOnDragEntered(e -> {
             if (!e.getDragboard().hasString() || draggingShipName == null) return;
             int length = Board.getShipLength(draggingShipName);
-
             boolean valid;
             if (dragFromBoard) {
-                // Temporarily lift the ship so it doesn't block its own placement check
                 playerBoard.removeShipAt(dragFromRow, dragFromCol);
                 valid = playerBoard.canPlaceShipPublic(row, col, length, dragIsVertical);
                 playerBoard.addShipByNameOriented(
@@ -362,22 +474,16 @@ public class ShipBattleGUI extends Application {
             } else {
                 valid = playerBoard.canPlaceShipPublic(row, col, length, dragIsVertical);
             }
-
             paintPreview(row, col, length, dragIsVertical, valid);
             e.consume();
         });
 
-        btn.setOnDragExited(e -> {
-            clearPreview();
-            e.consume();
-        });
+        btn.setOnDragExited(e -> { clearPreview(); e.consume(); });
 
         btn.setOnDragDropped(e -> {
             boolean success = false;
             if (e.getDragboard().hasString() && draggingShipName != null) {
-                if (dragFromBoard) {
-                    playerBoard.removeShipAt(dragFromRow, dragFromCol);
-                }
+                if (dragFromBoard) playerBoard.removeShipAt(dragFromRow, dragFromCol);
 
                 boolean placed = playerBoard.addShipByNameOriented(
                     playerBoard.toCoord(row, col), draggingShipName, dragIsVertical
@@ -385,12 +491,9 @@ public class ShipBattleGUI extends Application {
 
                 if (placed) {
                     updateBoard(playerBoard, playerButtons);
-                    if (!dragFromBoard) {
-                        hideFromTray(draggingShipName);
-                    }
+                    if (!dragFromBoard) hideFromTray(draggingShipName);
                     success = true;
                 } else {
-                    // Restore ship at original position if it was a board drag
                     if (dragFromBoard) {
                         playerBoard.addShipByNameOriented(
                             playerBoard.toCoord(dragFromRow, dragFromCol), draggingShipName, dragIsVertical
@@ -450,6 +553,25 @@ public class ShipBattleGUI extends Application {
                 btn.setStyle(
                     "-fx-background-color: " + cell.getColor() + ";" +
                     "-fx-text-fill: " + cell.getTextColor() + ";" +
+                    "-fx-background-radius: 3;" +
+                    "-fx-border-color: rgba(0,0,0,0.15);" +
+                    "-fx-border-radius: 3;"
+                );
+            }
+        }
+    }
+
+    // Bot board: hide ship positions — only show HIT/MISS, everything else as water
+    private void updateBotBoardForPlayer() {
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 10; col++) {
+                Cell actual = botBoard.getCell(row, col);
+                Cell display = (actual == Cell.HIT || actual == Cell.MISS) ? actual : Cell.WATER;
+                Button btn = botButtons[row][col];
+                btn.setText(display.getSymbol());
+                btn.setStyle(
+                    "-fx-background-color: " + display.getColor() + ";" +
+                    "-fx-text-fill: " + display.getTextColor() + ";" +
                     "-fx-background-radius: 3;" +
                     "-fx-border-color: rgba(0,0,0,0.15);" +
                     "-fx-border-radius: 3;"
