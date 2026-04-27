@@ -50,6 +50,9 @@ public class ShipBattleGUI extends Application {
     private boolean playerTurn = true;
     private final Random random = new Random();
 
+    // Bot smart targeting — list of adjacent cells to try after a hit
+    private final List<int[]> botTargetQueue = new ArrayList<>();
+
     // Status labels
     private Label playerStatusLabel;  // below player board — shows bot's action
     private Label botStatusLabel;     // below bot board — shows player's turn status
@@ -221,7 +224,7 @@ public class ShipBattleGUI extends Application {
     private void onBotCellClicked(int row, int col) {
         if (!gameStarted || !playerTurn) return;
         Cell c = botBoard.getCell(row, col);
-        if (c == Cell.HIT || c == Cell.MISS) return; // already fired here
+        if (c == Cell.HIT || c == Cell.MISS) return;
 
         playerTurn = false;
         setBotBoardEnabled(false);
@@ -229,7 +232,10 @@ public class ShipBattleGUI extends Application {
         boolean hit = botBoard.fireAt(row, col);
         updateBotBoardForPlayer();
 
-        if (hit) {
+        String sunk = botBoard.getLastSunkShip();
+        if (sunk != null) {
+            botStatusLabel.setText("YOU SUNK the bot's " + sunk + "!");
+        } else if (hit) {
             botStatusLabel.setText("YOU HIT a bot ship!");
         } else {
             botStatusLabel.setText("YOU MISSED.");
@@ -243,22 +249,25 @@ public class ShipBattleGUI extends Application {
         }
 
         playerStatusLabel.setText("BOT'S TURN — waiting...");
-
         PauseTransition pause = new PauseTransition(Duration.seconds(1.2));
         pause.setOnFinished(ev -> botFire());
         pause.play();
     }
 
     private void botFire() {
-        List<int[]> unfired = playerBoard.getUnfiredCells();
-        if (unfired.isEmpty()) return;
-
-        int[] target = unfired.get(random.nextInt(unfired.size()));
+        int[] target = pickBotTarget();
         boolean hit = playerBoard.fireAt(target[0], target[1]);
         updateBoard(playerBoard, playerButtons);
 
-        if (hit) {
+        String sunk = playerBoard.getLastSunkShip();
+        if (sunk != null) {
+            // Ship sunk — clear the queue so bot goes back to hunting
+            botTargetQueue.clear();
+            playerStatusLabel.setText("BOT SUNK your " + sunk + "!");
+        } else if (hit) {
             playerStatusLabel.setText("BOT HIT YOUR SHIP!");
+            // Queue the 4 adjacent cells for the bot to try next
+            addAdjacentTargets(target[0], target[1]);
         } else {
             playerStatusLabel.setText("BOT MISSED.");
         }
@@ -272,6 +281,34 @@ public class ShipBattleGUI extends Application {
         playerTurn = true;
         setBotBoardEnabled(true);
         botStatusLabel.setText("YOUR TURN — click a cell on the bot's board");
+    }
+
+    // Returns next target: queued adjacent cell if available, else random unfired cell
+    private int[] pickBotTarget() {
+        while (!botTargetQueue.isEmpty()) {
+            int[] candidate = botTargetQueue.remove(0);
+            int r = candidate[0], c = candidate[1];
+            if (r >= 0 && r < 10 && c >= 0 && c < 10) {
+                Cell cell = playerBoard.getCell(r, c);
+                if (cell != Cell.HIT && cell != Cell.MISS) return candidate;
+            }
+        }
+        // No queued targets — pick a random unfired cell
+        List<int[]> unfired = playerBoard.getUnfiredCells();
+        return unfired.get(random.nextInt(unfired.size()));
+    }
+
+    // Adds up/down/left/right neighbours to the bot's target queue (if unfired)
+    private void addAdjacentTargets(int row, int col) {
+        int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        for (int[] d : dirs) {
+            int r = row + d[0], c = col + d[1];
+            if (r >= 0 && r < 10 && c >= 0 && c < 10) {
+                Cell cell = playerBoard.getCell(r, c);
+                if (cell != Cell.HIT && cell != Cell.MISS)
+                    botTargetQueue.add(new int[]{r, c});
+            }
+        }
     }
 
     private void setBotBoardEnabled(boolean enabled) {
