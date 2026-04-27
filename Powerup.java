@@ -8,7 +8,7 @@ public class Powerup {
         //TO DO
     }
 
-    public void doReeinforcements(){
+    public void doReinforcements(){
         //TO DO
     }
 
