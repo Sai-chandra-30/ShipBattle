@@ -29,6 +29,10 @@ public class ShipBattleGUI extends Application {
 
     private Board botBoard = new Board();
     private Button[][] botButtons = new Button[10][10];
+    private boolean[][] markedBot = new boolean[10][10];
+
+    //powerup/ability states
+    private ShipAbilities abilities = new ShipAbilities();
 
     // Drag-and-drop state
     private boolean isVertical = false;
@@ -44,6 +48,9 @@ public class ShipBattleGUI extends Application {
     private Button orientationToggle;
     private Button randomizeButton;
     private Button startButton;
+
+    //powerup/ability buttons
+    private Button carrierButton;
 
     // Game state
     private boolean gameStarted = false;
@@ -137,6 +144,20 @@ public class ShipBattleGUI extends Application {
             startGame();
         });
 
+        carrierButton = new Button("Use Carrier Ability");
+        carrierButton.setDisable(true);
+        carrierButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        carrierButton.setStyle(
+            "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+            "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        carrierButton.setOnAction(e -> {
+            abilities.toggleCarrier();
+            if(abilities.getCarrierActive()) carrierButton.setText("Carrier Ability Active! [Click again to cancel]");
+            else carrierButton.setText("Use Carrier Ability");
+        
+        });
+
         playerStatusLabel = new Label("");
         playerStatusLabel.setFont(Font.font("Georgia", FontWeight.BOLD, 13));
         playerStatusLabel.setTextFill(Color.rgb(220, 220, 220));
@@ -150,8 +171,12 @@ public class ShipBattleGUI extends Application {
         bottomRow.setAlignment(Pos.CENTER_LEFT);
         bottomRow.setPadding(new Insets(8, 0, 0, 0));
 
+        HBox abilityRow = new HBox(12, carrierButton);
+        abilityRow.setAlignment(Pos.CENTER_LEFT);
+        abilityRow.setPadding(new Insets(8, 0, 0, 0));
+
         VBox playerSide = new VBox(6, playerLabel, playerGrid, playerStatusLabel,
-                                   trayControls, shipTray, bottomRow);
+                                   trayControls, shipTray, bottomRow,abilityRow);
         playerSide.setAlignment(Pos.CENTER_LEFT);
 
         // ── BOT side ───────────────────────────────────────────────────────────
@@ -215,24 +240,36 @@ public class ShipBattleGUI extends Application {
         setBotBoardEnabled(true);
 
         playerStatusLabel.setText("");
+        carrierButton.setDisable(false);
         botStatusLabel.setText("YOUR TURN — click a cell on the bot's board");
     }
 
     private void onBotCellClicked(int row, int col) {
         if (!gameStarted || !playerTurn) return;
         Cell c = botBoard.getCell(row, col);
-        if (c == Cell.HIT || c == Cell.MISS) return; // already fired here
+        if(abilities.getCarrierActive()) {
+            abilities.useCarrier(row,col,markedBot);
+            updateBotBoardForPlayer();
+            botStatusLabel.setText("Carrier Ability has been used!");
+            abilities.toggleCarrier();
+            abilities.resetCarrierCooldown();
+            carrierButton.setText("Carrier Ability Cooldown: 3 Turns");
+            carrierButton.setDisable(true);
+        }
+        else {
+            if (c == Cell.HIT || c == Cell.MISS) return; // already fired here
 
-        playerTurn = false;
-        setBotBoardEnabled(false);
+            playerTurn = false;
+            setBotBoardEnabled(false);
 
-        boolean hit = botBoard.fireAt(row, col);
-        updateBotBoardForPlayer();
+            boolean hit = botBoard.fireAt(row, col);
+            updateBotBoardForPlayer();
 
-        if (hit) {
-            botStatusLabel.setText("YOU HIT a bot ship!");
-        } else {
-            botStatusLabel.setText("YOU MISSED.");
+            if (hit) {
+                botStatusLabel.setText("YOU HIT a bot ship!");
+            } else {
+                botStatusLabel.setText("YOU MISSED.");
+            }
         }
 
         if (botBoard.allShipsSunk()) {
@@ -272,6 +309,16 @@ public class ShipBattleGUI extends Application {
         playerTurn = true;
         setBotBoardEnabled(true);
         botStatusLabel.setText("YOUR TURN — click a cell on the bot's board");
+        if(abilities.getCarrierCooldown() > 0) {
+           abilities.decrementCarrierCooldown();
+            if(abilities.getCarrierCooldown() == 0) {
+                carrierButton.setDisable(false);
+                carrierButton.setText("Use Carrier Ability");
+            }
+            else {
+                carrierButton.setText("Carrier Ability Cooldown: " + abilities.getCarrierCooldown() + " Turns");
+            }
+        }
     }
 
     private void setBotBoardEnabled(boolean enabled) {
@@ -566,9 +613,10 @@ public class ShipBattleGUI extends Application {
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 10; col++) {
                 Cell actual = botBoard.getCell(row, col);
-                Cell display = (actual == Cell.HIT || actual == Cell.MISS) ? actual : Cell.WATER;
+                Cell display = (actual == Cell.HIT || actual == Cell.MISS || markedBot[row][col]) ? actual : Cell.WATER;
                 Button btn = botButtons[row][col];
-                btn.setText(display.getSymbol());
+                if(markedBot[row][col])  btn.setText(display.getTrueSymbol()); //only show marked tiles if they are marked
+                else btn.setText(display.getSymbol());
                 btn.setStyle(
                     "-fx-background-color: " + display.getColor() + ";" +
                     "-fx-text-fill: " + display.getTextColor() + ";" +

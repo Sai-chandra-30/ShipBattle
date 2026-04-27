@@ -16,6 +16,15 @@ public enum Cell {
             default:   return " ";
         }
     }
+    // Returns the single-character symbol for this cell (when revealed by Carrier)
+    public String getTrueSymbol() {
+        switch (this) {
+            case HIT:  return "✕";
+            case MISS: return "○";
+            case WATER: return "W";
+            default:   return "S";
+        }
+    }
  
     // Returns the hex background color for this cell
     public String getColor() {
