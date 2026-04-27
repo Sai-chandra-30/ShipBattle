@@ -200,12 +200,22 @@ public class Board {
         }
     }
 
-    // Fires at (row, col); returns true if it hit a ship
+    private String lastSunkShip = null;
+
+    public String getLastSunkShip() { return lastSunkShip; }
+
+    // Fires at (row, col); returns true if it hit a ship. Sets lastSunkShip if a ship was fully sunk.
     public boolean fireAt(int row, int col) {
         Cell c = board[row][col];
         if (c == Cell.HIT || c == Cell.MISS) return false;
+        lastSunkShip = null;
         if (c != Cell.WATER) {
             board[row][col] = Cell.HIT;
+            boolean stillAlive = false;
+            for (int i = 0; i < SIZE && !stillAlive; i++)
+                for (int j = 0; j < SIZE && !stillAlive; j++)
+                    if (board[i][j] == c) stillAlive = true;
+            if (!stillAlive) lastSunkShip = cellToName(c);
             return true;
         }
         board[row][col] = Cell.MISS;

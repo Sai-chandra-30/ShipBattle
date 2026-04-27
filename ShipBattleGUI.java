@@ -57,6 +57,9 @@ public class ShipBattleGUI extends Application {
     private boolean playerTurn = true;
     private final Random random = new Random();
 
+    // Bot smart targeting — adjacent cells to try after a hit
+    private final List<int[]> botTargetQueue = new ArrayList<>();
+
     // Status labels
     private Label playerStatusLabel;  // below player board — shows bot's action
     private Label botStatusLabel;     // below bot board — shows player's turn status
@@ -287,15 +290,17 @@ public class ShipBattleGUI extends Application {
     }
 
     private void botFire() {
-        List<int[]> unfired = playerBoard.getUnfiredCells();
-        if (unfired.isEmpty()) return;
-
-        int[] target = unfired.get(random.nextInt(unfired.size()));
+        int[] target = pickBotTarget();
         boolean hit = playerBoard.fireAt(target[0], target[1]);
         updateBoard(playerBoard, playerButtons);
 
-        if (hit) {
+        String sunk = playerBoard.getLastSunkShip();
+        if (sunk != null) {
+            botTargetQueue.clear();
+            playerStatusLabel.setText("BOT SUNK your " + sunk + "!");
+        } else if (hit) {
             playerStatusLabel.setText("BOT HIT YOUR SHIP!");
+            addAdjacentTargets(target[0], target[1]);
         } else {
             playerStatusLabel.setText("BOT MISSED.");
         }
@@ -317,6 +322,33 @@ public class ShipBattleGUI extends Application {
             }
             else {
                 carrierButton.setText("Carrier Ability Cooldown: " + abilities.getCarrierCooldown() + " Turns");
+            }
+        }
+    }
+
+    // Returns next target: queued adjacent cell if available, else random unfired cell
+    private int[] pickBotTarget() {
+        while (!botTargetQueue.isEmpty()) {
+            int[] candidate = botTargetQueue.remove(0);
+            int r = candidate[0], c = candidate[1];
+            if (r >= 0 && r < 10 && c >= 0 && c < 10) {
+                Cell cell = playerBoard.getCell(r, c);
+                if (cell != Cell.HIT && cell != Cell.MISS) return candidate;
+            }
+        }
+        List<int[]> unfired = playerBoard.getUnfiredCells();
+        return unfired.get(random.nextInt(unfired.size()));
+    }
+
+    // Adds up/down/left/right neighbours to the bot's target queue
+    private void addAdjacentTargets(int row, int col) {
+        int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        for (int[] d : dirs) {
+            int r = row + d[0], c = col + d[1];
+            if (r >= 0 && r < 10 && c >= 0 && c < 10) {
+                Cell cell = playerBoard.getCell(r, c);
+                if (cell != Cell.HIT && cell != Cell.MISS)
+                    botTargetQueue.add(new int[]{r, c});
             }
         }
     }
