@@ -51,6 +51,7 @@ public class ShipBattleGUI extends Application {
 
     //powerup/ability buttons
     private Button carrierButton;
+    private Button frigateButton;
 
     // Game state
     private boolean gameStarted = false;
@@ -161,6 +162,22 @@ public class ShipBattleGUI extends Application {
         
         });
 
+        frigateButton = new Button("Use Frigate Ability");
+        frigateButton.setDisable(true);
+        frigateButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        frigateButton.setStyle(
+            "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+            "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        frigateButton.setOnAction(e -> {
+            abilities.useFrigate(playerBoard);
+            updateBoard(playerBoard, playerButtons);
+            playerStatusLabel.setText("Frigate has been revived!");
+            botTargetQueue.clear();
+            frigateButton.setText("Frigate Ability Used");
+            frigateButton.setDisable(true);
+        });
+
         playerStatusLabel = new Label("");
         playerStatusLabel.setFont(Font.font("Georgia", FontWeight.BOLD, 13));
         playerStatusLabel.setTextFill(Color.rgb(220, 220, 220));
@@ -174,7 +191,7 @@ public class ShipBattleGUI extends Application {
         bottomRow.setAlignment(Pos.CENTER_LEFT);
         bottomRow.setPadding(new Insets(8, 0, 0, 0));
 
-        HBox abilityRow = new HBox(12, carrierButton);
+        HBox abilityRow = new HBox(12, carrierButton, frigateButton);
         abilityRow.setAlignment(Pos.CENTER_LEFT);
         abilityRow.setPadding(new Insets(8, 0, 0, 0));
 
@@ -244,6 +261,7 @@ public class ShipBattleGUI extends Application {
 
         playerStatusLabel.setText("");
         carrierButton.setDisable(false);
+        frigateButton.setDisable(false);
         botStatusLabel.setText("YOUR TURN — click a cell on the bot's board");
     }
 
@@ -260,7 +278,7 @@ public class ShipBattleGUI extends Application {
             carrierButton.setDisable(true);
         }
         else {
-            if (c == Cell.HIT || c == Cell.MISS) return; // already fired here
+            if (c == Cell.HIT || c == Cell.MISS) return;
 
             playerTurn = false;
             setBotBoardEnabled(false);
@@ -298,6 +316,11 @@ public class ShipBattleGUI extends Application {
         if (sunk != null) {
             botTargetQueue.clear();
             playerStatusLabel.setText("BOT SUNK your " + sunk + "!");
+            if (sunk.equals("Frigate") && !abilities.isFrigateUsed()) {
+                if (abilities.getFrigateActive()) abilities.toggleFrigate();
+                frigateButton.setText("Frigate Sunk");
+                frigateButton.setDisable(true);
+            }
         } else if (hit) {
             playerStatusLabel.setText("BOT HIT YOUR SHIP!");
             addAdjacentTargets(target[0], target[1]);
