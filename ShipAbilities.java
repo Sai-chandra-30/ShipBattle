@@ -3,6 +3,10 @@ public class ShipAbilities {
     private int carrierResetCooldown = 3;
     private int carrierCooldown = 0; 
 
+    private boolean frigateActive = false;
+    private boolean frigateUsed = false;
+
+    // Carrier
     public boolean getCarrierActive() {
         return carrierActive;
     }
@@ -29,5 +33,37 @@ public class ShipAbilities {
             }
         }
         return markedBot;
+    }
+
+    // Frigate
+
+    public boolean getFrigateActive() {
+        return frigateActive;
+    }
+
+    public void toggleFrigate() {
+        frigateActive = !frigateActive;
+    }
+
+    public boolean isFrigateUsed() {
+        return frigateUsed;
+    }
+
+    public void useFrigate(Board playerBoard) {
+        frigateUsed = true;
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (playerBoard.getCell(i, j) == Cell.FRIGATE) {
+                    int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+                    for (int[] d : dirs) {
+                        int ni = i + d[0], nj = j + d[1];
+                        if (ni >= 0 && ni < 10 && nj >= 0 && nj < 10
+                            && playerBoard.getCell(ni, nj) == Cell.HIT) {
+                            playerBoard.setCell(ni, nj, Cell.FRIGATE);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
