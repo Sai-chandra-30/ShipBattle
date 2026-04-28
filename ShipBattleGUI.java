@@ -262,12 +262,13 @@ public class ShipBattleGUI extends Application {
                         "-fx-background-radius: 4; -fx-padding: 4 10;"
         );
         blackoutButton.setOnAction(e -> {
-            Powerup.doBlackout();
+            Powerup.doBlackout(playerBoard);
             blackoutCounter--;
             if(blackoutCounter == 0){
                 blackoutButton.setDisable(true);
             }
             blackoutButton.setText("Use Blackout (" + blackoutCounter + "x)");
+            updateBoard(playerBoard, playerButtons);
         });
 
         rebuildButton = new Button("Use Rebuild (0x)");
@@ -429,18 +430,13 @@ public class ShipBattleGUI extends Application {
                     gameStarted = false;
                     return;
                 }
-                String sunk = botBoard.getLastSunkShip();
                 if (abilities.getBattleshipActive()) {
-                    String msg = sunk != null
-                        ? "YOU SUNK the bot's " + sunk + "! Your battleship can shoot again!"
-                        : "YOU HIT a bot ship! Your battleship can shoot again!";
-                    botStatusLabel.setText(msg);
+                    botStatusLabel.setText("YOU HIT a bot ship! Your battleship can shoot again!");
                     playerTurn = true;
                     setBotBoardEnabled(true);
                     return;
-                } else if (sunk != null) {
-                    botStatusLabel.setText("YOU SUNK the bot's " + sunk + "!");
-                } else {
+                }
+                else {
                     botStatusLabel.setText("YOU HIT a bot ship!");
                 }
             }
