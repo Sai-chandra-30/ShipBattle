@@ -1,30 +1,30 @@
 public class Powerup {
-
-    public void doRadar(){
+    
+    public static void doRadar(){
         //TO DO
     }
 
-    public void doShield(){
+    public static void doShield(){
         //TO DO
     }
 
-    public void doReinforcements(){
+    public static void doReinforcements(){
         //TO DO
     }
 
-    public void doCommunicationDisruption(){
+    public static void doCommunicationDisruption(){
         //TO DO
     }
 
-    public void doBlackout(){
+    public static void doBlackout(){
         //TO DO (Liam)
     }
 
-    public void doRebuild(){
+    public static void doRebuild(){
         //TO DO (Liam)
     }
 
-    public void doReposition(){
+    public static void doReposition(){
         //TO DO (Liam)
     }
 }

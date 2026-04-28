@@ -33,6 +33,13 @@ public class ShipBattleGUI extends Application {
 
     //powerup/ability states
     private ShipAbilities abilities = new ShipAbilities();
+    int radarCounter = 0;
+    int shieldCounter = 0;
+    int reinforcementsCounter = 0;
+    int communicationDisruptionCounter = 0;
+    int blackoutCounter = 0;
+    int rebuildCounter = 0;
+    int repositionCounter = 0;
 
     // Drag-and-drop state
     private boolean isVertical = false;
@@ -51,6 +58,13 @@ public class ShipBattleGUI extends Application {
 
     //powerup/ability buttons
     private Button carrierButton;
+    private Button radarButton;
+    private Button shieldButton;
+    private Button reinforcementsButton;
+    private Button communicationDisruptionButton;
+    private Button blackoutButton;
+    private Button rebuildButton;
+    private Button repositionButton;
 
     // Game state
     private boolean gameStarted = false;
@@ -161,6 +175,118 @@ public class ShipBattleGUI extends Application {
         
         });
 
+        radarButton = new Button("Use Radar (0x)");
+        radarButton.setDisable(true);
+        radarButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        radarButton.setStyle(
+                "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        radarButton.setOnAction(e -> {
+            Powerup.doRadar();
+            radarCounter--;
+            if(radarCounter == 0){
+                radarButton.setDisable(true);
+            }
+            radarButton.setText("Use Radar (" + radarCounter + "x)");
+        });
+
+        shieldButton = new Button("Use Shield (0x)");
+        shieldButton.setDisable(true);
+        shieldButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        shieldButton.setStyle(
+                "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        shieldButton.setOnAction(e -> {
+            Powerup.doShield();
+            shieldCounter--;
+            if(shieldCounter == 0){
+                shieldButton.setDisable(true);
+            }
+            shieldButton.setText("Use Shield (" + shieldCounter + "x)");
+        });
+
+        reinforcementsButton = new Button("Use Reinforcements (0x)");
+        reinforcementsButton.setDisable(true);
+        reinforcementsButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        reinforcementsButton.setStyle(
+                "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        reinforcementsButton.setOnAction(e -> {
+            Powerup.doReinforcements();
+            reinforcementsCounter--;
+            if(reinforcementsCounter == 0){
+                reinforcementsButton.setDisable(true);
+            }
+            reinforcementsButton.setText("Use Reinforcements (" + reinforcementsCounter + "x)");
+        });
+
+        communicationDisruptionButton = new Button("Use Communication Disruption (0x)");
+        communicationDisruptionButton.setDisable(true);
+        communicationDisruptionButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        communicationDisruptionButton.setStyle(
+                "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        communicationDisruptionButton.setOnAction(e -> {
+            Powerup.doCommunicationDisruption();
+            communicationDisruptionCounter--;
+            if(communicationDisruptionCounter == 0){
+                communicationDisruptionButton.setDisable(true);
+            }
+            communicationDisruptionButton.setText("Use Communication Disruption (" + communicationDisruptionCounter + "x)");
+        });
+
+        blackoutButton = new Button("Use Blackout (0x)");
+        blackoutButton.setDisable(true);
+        blackoutButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        blackoutButton.setStyle(
+                "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        blackoutButton.setOnAction(e -> {
+            Powerup.doBlackout();
+            blackoutCounter--;
+            if(blackoutCounter == 0){
+                blackoutButton.setDisable(true);
+            }
+            blackoutButton.setText("Use Blackout (" + blackoutCounter + "x)");
+        });
+
+        rebuildButton = new Button("Use Rebuild (0x)");
+        rebuildButton.setDisable(true);
+        rebuildButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        rebuildButton.setStyle(
+                "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        rebuildButton.setOnAction(e -> {
+            Powerup.doRebuild();
+            rebuildCounter--;
+            if(rebuildCounter == 0){
+                rebuildButton.setDisable(true);
+            }
+            rebuildButton.setText("Use Rebuild (" + rebuildCounter + "x)");
+        });
+
+        repositionButton = new Button("Use Reposition (0x)");
+        repositionButton.setDisable(true);
+        repositionButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        repositionButton.setStyle(
+                "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+                        "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        repositionButton.setOnAction(e -> {
+            Powerup.doReposition();
+            repositionCounter--;
+            if(repositionCounter == 0){
+                repositionButton.setDisable(true);
+            }
+            repositionButton.setText("Use Reposition (" + repositionCounter + "x)");
+        });
+
         playerStatusLabel = new Label("");
         playerStatusLabel.setFont(Font.font("Georgia", FontWeight.BOLD, 13));
         playerStatusLabel.setTextFill(Color.rgb(220, 220, 220));
@@ -178,8 +304,20 @@ public class ShipBattleGUI extends Application {
         abilityRow.setAlignment(Pos.CENTER_LEFT);
         abilityRow.setPadding(new Insets(8, 0, 0, 0));
 
+        HBox powerupFirstRow = new HBox(12, radarButton, shieldButton, reinforcementsButton);
+        powerupFirstRow.setAlignment(Pos.CENTER_LEFT);
+        powerupFirstRow.setPadding(new Insets(8, 0, 0, 0));
+
+        HBox powerupSecondRow = new HBox(12, communicationDisruptionButton, blackoutButton);
+        powerupSecondRow.setAlignment(Pos.CENTER_LEFT);
+        powerupSecondRow.setPadding(new Insets(8, 0, 0, 0));
+
+        HBox powerupThirdRow = new HBox(12, rebuildButton, repositionButton);
+        powerupThirdRow.setAlignment(Pos.CENTER_LEFT);
+        powerupThirdRow.setPadding(new Insets(8, 0, 0, 0));
+
         VBox playerSide = new VBox(6, playerLabel, playerGrid, playerStatusLabel,
-                                   trayControls, shipTray, bottomRow,abilityRow);
+                                   trayControls, shipTray, bottomRow, abilityRow, powerupFirstRow, powerupSecondRow, powerupThirdRow);
         playerSide.setAlignment(Pos.CENTER_LEFT);
 
         // ── BOT side ───────────────────────────────────────────────────────────
@@ -314,6 +452,8 @@ public class ShipBattleGUI extends Application {
         playerTurn = true;
         setBotBoardEnabled(true);
         botStatusLabel.setText("YOUR TURN — click a cell on the bot's board");
+
+        //Decrement ship ability cooldowns
         if(abilities.getCarrierCooldown() > 0) {
            abilities.decrementCarrierCooldown();
             if(abilities.getCarrierCooldown() == 0) {
@@ -322,6 +462,64 @@ public class ShipBattleGUI extends Application {
             }
             else {
                 carrierButton.setText("Carrier Ability Cooldown: " + abilities.getCarrierCooldown() + " Turns");
+            }
+        }
+
+        //Chance to give player powerup
+        int dropChance = 3; //Chance of getting a powerup will be 1/dropChance
+        int dropRoll = (int)(Math.random() * dropChance);
+        if(dropRoll == 0){
+            int whichPowerup = (int)(Math.random() * 7);
+            switch(whichPowerup){
+                case 0:
+                    radarCounter++;
+                    if(radarCounter == 1){
+                        radarButton.setDisable(false);
+                    }
+                    radarButton.setText("Use Radar (" + radarCounter + "x)");
+                    break;
+                case 1:
+                    shieldCounter++;
+                    if(shieldCounter == 1){
+                        shieldButton.setDisable(false);
+                    }
+                    shieldButton.setText("Use Shield (" + shieldCounter + "x)");
+                    break;
+                case 2:
+                    reinforcementsCounter++;
+                    if(reinforcementsCounter == 1){
+                        reinforcementsButton.setDisable(false);
+                    }
+                    reinforcementsButton.setText("Use Reinforcements (" + reinforcementsCounter + "x)");
+                    break;
+                case 3:
+                    communicationDisruptionCounter++;
+                    if(communicationDisruptionCounter == 1){
+                        communicationDisruptionButton.setDisable(false);
+                    }
+                    communicationDisruptionButton.setText("Use Communication Disruption (" + communicationDisruptionCounter + "x)");
+                    break;
+                case 4:
+                    blackoutCounter++;
+                    if(blackoutCounter == 1){
+                        blackoutButton.setDisable(false);
+                    }
+                    blackoutButton.setText("Use Blackout (" + blackoutCounter + "x)");
+                    break;
+                case 5:
+                    rebuildCounter++;
+                    if(rebuildCounter == 1){
+                        rebuildButton.setDisable(false);
+                    }
+                    rebuildButton.setText("Use Rebuld (" + rebuildCounter + "x)");
+                    break;
+                case 6:
+                    repositionCounter++;
+                    if(repositionCounter == 1){
+                        repositionButton.setDisable(false);
+                    }
+                    repositionButton.setText("Use Reposition (" + repositionCounter + "x)");
+                    break;
             }
         }
     }
