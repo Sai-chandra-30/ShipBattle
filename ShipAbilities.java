@@ -1,3 +1,5 @@
+import java.util.Set;
+
 public class ShipAbilities {
     private boolean carrierActive = false;
     private int carrierResetCooldown = 3;
@@ -5,6 +7,12 @@ public class ShipAbilities {
 
     private boolean frigateActive = false;
     private boolean frigateUsed = false;
+
+    private Set<String> sunkShips;
+
+    public ShipAbilities(Set<String> sunkShips) {
+        this.sunkShips = sunkShips;
+    }
 
     // Carrier
     public boolean getCarrierActive() {
@@ -33,6 +41,10 @@ public class ShipAbilities {
             }
         }
         return markedBot;
+    }
+
+    public boolean getBattleshipActive() {
+        return !sunkShips.contains("Battleship");
     }
 
     // Frigate

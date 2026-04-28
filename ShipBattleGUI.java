@@ -12,11 +12,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+
+import java.util.*;
 
 public class ShipBattleGUI extends Application {
 
@@ -32,7 +29,8 @@ public class ShipBattleGUI extends Application {
     private boolean[][] markedBot = new boolean[10][10];
 
     //powerup/ability states
-    private ShipAbilities abilities = new ShipAbilities();
+    private Set<String> sunkShips = new HashSet<>(); //this will track what ships the bot has sunk
+    private ShipAbilities abilities = new ShipAbilities(sunkShips);
     int radarCounter = 0;
     int shieldCounter = 0;
     int reinforcementsCounter = 0;
@@ -406,7 +404,7 @@ public class ShipBattleGUI extends Application {
     private void onBotCellClicked(int row, int col) {
         if (!gameStarted || !playerTurn) return;
         Cell c = botBoard.getCell(row, col);
-        if(abilities.getCarrierActive()) {
+        if (abilities.getCarrierActive()) {
             abilities.useCarrier(row,col,markedBot);
             updateBotBoardForPlayer();
             botStatusLabel.setText("Carrier Ability has been used!");
@@ -414,29 +412,40 @@ public class ShipBattleGUI extends Application {
             abilities.resetCarrierCooldown();
             carrierButton.setText("Carrier Ability Cooldown: 3 Turns");
             carrierButton.setDisable(true);
-        }
-        else {
-            if (c == Cell.HIT || c == Cell.MISS) return;
 
-            playerTurn = false;
-            setBotBoardEnabled(false);
+        }
+        //else if frigate active {}
+        //else if submarine active {}
+        else {
+            if (c == Cell.HIT || c == Cell.MISS) return; // already fired here
 
             boolean hit = botBoard.fireAt(row, col);
             updateBotBoardForPlayer();
 
             if (hit) {
-                botStatusLabel.setText("YOU HIT a bot ship!");
-            } else {
+                if (botBoard.allShipsSunk()) {
+                    playerStatusLabel.setText("");
+                    botStatusLabel.setText("YOU WIN! All bot ships sunk!");
+                    gameStarted = false;
+                    return;
+                }
+                if (abilities.getBattleshipActive()) {
+                    botStatusLabel.setText("YOU HIT a bot ship! Your battleship can shoot again!");
+                    playerTurn = true;
+                    setBotBoardEnabled(true);
+                    return;
+                }
+                else {
+                    botStatusLabel.setText("YOU HIT a bot ship!");
+                }
+            }
+            else {
                 botStatusLabel.setText("YOU MISSED.");
             }
         }
 
-        if (botBoard.allShipsSunk()) {
-            playerStatusLabel.setText("");
-            botStatusLabel.setText("YOU WIN! All bot ships sunk!");
-            gameStarted = false;
-            return;
-        }
+        playerTurn = false;
+        setBotBoardEnabled(false);
 
         playerStatusLabel.setText("BOT'S TURN — waiting...");
 
@@ -452,6 +461,7 @@ public class ShipBattleGUI extends Application {
 
         String sunk = playerBoard.getLastSunkShip();
         if (sunk != null) {
+            sunkShips.add(sunk);
             botTargetQueue.clear();
             playerStatusLabel.setText("BOT SUNK your " + sunk + "!");
             if (sunk.equals("Frigate") && !abilities.isFrigateUsed()) {
