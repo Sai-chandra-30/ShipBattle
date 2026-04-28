@@ -429,13 +429,18 @@ public class ShipBattleGUI extends Application {
                     gameStarted = false;
                     return;
                 }
+                String sunk = botBoard.getLastSunkShip();
                 if (abilities.getBattleshipActive()) {
-                    botStatusLabel.setText("YOU HIT a bot ship! Your battleship can shoot again!");
+                    String msg = sunk != null
+                        ? "YOU SUNK the bot's " + sunk + "! Your battleship can shoot again!"
+                        : "YOU HIT a bot ship! Your battleship can shoot again!";
+                    botStatusLabel.setText(msg);
                     playerTurn = true;
                     setBotBoardEnabled(true);
                     return;
-                }
-                else {
+                } else if (sunk != null) {
+                    botStatusLabel.setText("YOU SUNK the bot's " + sunk + "!");
+                } else {
                     botStatusLabel.setText("YOU HIT a bot ship!");
                 }
             }
