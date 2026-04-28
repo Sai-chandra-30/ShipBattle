@@ -28,6 +28,8 @@ public class ShipBattleGUI extends Application {
     private Button[][] botButtons = new Button[10][10];
     private boolean[][] markedBot = new boolean[10][10];
 
+    private Board initialPlayerBoard = new Board();
+
     //powerup/ability states
     private Set<String> sunkShips = new HashSet<>(); //this will track what ships the bot has sunk
     private ShipAbilities abilities = new ShipAbilities(sunkShips);
@@ -279,12 +281,14 @@ public class ShipBattleGUI extends Application {
                         "-fx-background-radius: 4; -fx-padding: 4 10;"
         );
         rebuildButton.setOnAction(e -> {
-            Powerup.doRebuild();
-            rebuildCounter--;
-            if(rebuildCounter == 0){
-                rebuildButton.setDisable(true);
+            if(Powerup.doRebuild(initialPlayerBoard, playerBoard)) {
+                rebuildCounter--;
+                if(rebuildCounter == 0){
+                    rebuildButton.setDisable(true);
+                }
+                rebuildButton.setText("Use Rebuild (" + rebuildCounter + "x)");
+                updateBoard(playerBoard, playerButtons);
             }
-            rebuildButton.setText("Use Rebuild (" + rebuildCounter + "x)");
         });
 
         repositionButton = new Button("Use Reposition (0x)");
@@ -400,6 +404,13 @@ public class ShipBattleGUI extends Application {
         carrierButton.setDisable(false);
         frigateButton.setDisable(false);
         botStatusLabel.setText("YOUR TURN — click a cell on the bot's board");
+
+        // Snapshot board states to compare later
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                initialPlayerBoard.setCell(i, j, playerBoard.getCell(i, j));
+            }
+        }
     }
 
     private void onBotCellClicked(int row, int col) {
@@ -550,7 +561,7 @@ public class ShipBattleGUI extends Application {
                     if(rebuildCounter == 1){
                         rebuildButton.setDisable(false);
                     }
-                    rebuildButton.setText("Use Rebuld (" + rebuildCounter + "x)");
+                    rebuildButton.setText("Use Rebuild (" + rebuildCounter + "x)");
                     break;
                 case 6:
                     repositionCounter++;
