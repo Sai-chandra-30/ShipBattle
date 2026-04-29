@@ -57,6 +57,7 @@ public class ShipBattleGUI extends Application {
     //powerup/ability buttons
     private Button carrierButton;
     private Button frigateButton;
+    private Button submarineButton;
     private Button radarButton;
     private Button shieldButton;
     private Button reinforcementsButton;
@@ -190,6 +191,19 @@ public class ShipBattleGUI extends Application {
             frigateButton.setDisable(true);
         });
 
+        submarineButton = new Button("Use Nuclear Ability");
+        submarineButton.setDisable(true);
+        submarineButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
+        submarineButton.setStyle(
+            "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+            "-fx-background-radius: 4; -fx-padding: 4 10;"
+        );
+        submarineButton.setOnAction(e -> {
+            abilities.toggleSubmarine();
+            if (abilities.getSubmarineActive()) submarineButton.setText("Nuclear Active! [Click again to cancel]");
+            else submarineButton.setText("Use Nuclear Ability");
+        });
+
         radarButton = new Button("Use Radar (0x)");
         radarButton.setDisable(true);
         radarButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
@@ -315,7 +329,7 @@ public class ShipBattleGUI extends Application {
         bottomRow.setAlignment(Pos.CENTER_LEFT);
         bottomRow.setPadding(new Insets(8, 0, 0, 0));
 
-        HBox abilityRow = new HBox(12, carrierButton, frigateButton);
+        HBox abilityRow = new HBox(12, carrierButton, frigateButton, submarineButton);
         abilityRow.setAlignment(Pos.CENTER_LEFT);
         abilityRow.setPadding(new Insets(8, 0, 0, 0));
 
@@ -398,6 +412,7 @@ public class ShipBattleGUI extends Application {
         playerStatusLabel.setText("");
         carrierButton.setDisable(false);
         frigateButton.setDisable(false);
+        submarineButton.setDisable(false);
         botStatusLabel.setText("YOUR TURN — click a cell on the bot's board");
     }
 
@@ -415,7 +430,15 @@ public class ShipBattleGUI extends Application {
 
         }
         //else if frigate active {}
-        //else if submarine active {}
+        else if (abilities.getSubmarineActive()) {
+            abilities.useSubmarine(row, col, markedBot);
+            updateBotBoardForPlayer();
+            botStatusLabel.setText("Nuclear strike launched!");
+            abilities.toggleSubmarine();
+            abilities.resetSubmarineCooldown();
+            submarineButton.setText("Nuclear Cooldown: 5 Turns");
+            submarineButton.setDisable(true);
+        }
         else {
             if (c == Cell.HIT || c == Cell.MISS) return; // already fired here
 
@@ -500,6 +523,16 @@ public class ShipBattleGUI extends Application {
             }
             else {
                 carrierButton.setText("Carrier Ability Cooldown: " + abilities.getCarrierCooldown() + " Turns");
+            }
+        }
+        if(abilities.getSubmarineCooldown() > 0) {
+            abilities.decrementSubmarineCooldown();
+            if(abilities.getSubmarineCooldown() == 0) {
+                submarineButton.setDisable(false);
+                submarineButton.setText("Use Nuclear Ability");
+            }
+            else {
+                submarineButton.setText("Nuclear Cooldown: " + abilities.getSubmarineCooldown() + " Turns");
             }
         }
 
