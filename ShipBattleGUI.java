@@ -193,7 +193,7 @@ public class ShipBattleGUI extends Application {
             frigateButton.setDisable(true);
         });
 
-        submarineButton = new Button("Use Nuclear Ability");
+        submarineButton = new Button("Use Submarine Nuclear Ability");
         submarineButton.setDisable(true);
         submarineButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
         submarineButton.setStyle(
@@ -202,8 +202,8 @@ public class ShipBattleGUI extends Application {
         );
         submarineButton.setOnAction(e -> {
             abilities.toggleSubmarine();
-            if (abilities.getSubmarineActive()) submarineButton.setText("Nuclear Active! [Click again to cancel]");
-            else submarineButton.setText("Use Nuclear Ability");
+            if (abilities.getSubmarineActive()) submarineButton.setText("Submarine Nuclear Active! [Click again to cancel]");
+            else submarineButton.setText("Use Submarine Nuclear Ability");
         });
 
         radarButton = new Button("Use Radar (0x)");
@@ -446,10 +446,10 @@ public class ShipBattleGUI extends Application {
         else if (abilities.getSubmarineActive()) {
             abilities.useSubmarine(row, col, markedBot);
             updateBotBoardForPlayer();
-            botStatusLabel.setText("Nuclear strike launched!");
+            botStatusLabel.setText("Submarine Nuclear strike launched!");
             abilities.toggleSubmarine();
             abilities.resetSubmarineCooldown();
-            submarineButton.setText("Nuclear Cooldown: 5 Turns");
+            submarineButton.setText("Submarine Nuclear Cooldown: 5 Turns");
             submarineButton.setDisable(true);
         }
         else {
@@ -542,10 +542,10 @@ public class ShipBattleGUI extends Application {
             abilities.decrementSubmarineCooldown();
             if(abilities.getSubmarineCooldown() == 0) {
                 submarineButton.setDisable(false);
-                submarineButton.setText("Use Nuclear Ability");
+                submarineButton.setText("Use Submarine Nuclear Ability");
             }
             else {
-                submarineButton.setText("Nuclear Cooldown: " + abilities.getSubmarineCooldown() + " Turns");
+                submarineButton.setText("Submarine Nuclear Cooldown: " + abilities.getSubmarineCooldown() + " Turns");
             }
         }
 
