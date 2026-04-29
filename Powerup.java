@@ -1,7 +1,38 @@
 public class Powerup {
     
-    public static void doRadar(){
-        //TO DO
+    //Reveal a random unsunk enemy ship. Returns the ship name, or null if all ships are sunk.
+    public static String doRadar(Board botBoard, boolean[][] markedBot){
+        Cell[] allShipTypes = {Cell.CARRIER, Cell.BATTLESHIP, Cell.DESTROYER, Cell.SUBMARINE, Cell.FRIGATE};
+        String[] shipNames = {"Carrier", "Battleship", "Destroyer", "Submarine", "Frigate"};
+
+        //Find ship types still on the board
+        int[] unsunkIndices = new int[allShipTypes.length];
+        int unsunkCount = 0;
+        for (int s = 0; s < allShipTypes.length; s++) {
+            boolean found = false;
+            for (int i = 0; i < 10 && !found; i++) {
+                for (int j = 0; j < 10 && !found; j++) {
+                    if (botBoard.getCell(i, j) == allShipTypes[s]) {
+                        unsunkIndices[unsunkCount++] = s;
+                        found = true;
+                    }
+                }
+            }
+        }
+
+        if (unsunkCount == 0) return null;
+
+        //Pick one at random and mark its cells
+        int pick = unsunkIndices[(int)(Math.random() * unsunkCount)];
+        Cell chosen = allShipTypes[pick];
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (botBoard.getCell(i, j) == chosen) {
+                    markedBot[i][j] = true;
+                }
+            }
+        }
+        return shipNames[pick];
     }
 
     public static void doShield(){

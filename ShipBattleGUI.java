@@ -214,12 +214,16 @@ public class ShipBattleGUI extends Application {
                         "-fx-background-radius: 4; -fx-padding: 4 10;"
         );
         radarButton.setOnAction(e -> {
-            Powerup.doRadar();
-            radarCounter--;
-            if(radarCounter == 0){
-                radarButton.setDisable(true);
+            String revealed = Powerup.doRadar(botBoard, markedBot);
+            if(revealed != null) {
+                radarCounter--;
+                if(radarCounter == 0){
+                    radarButton.setDisable(true);
+                }
+                radarButton.setText("Use Radar (" + radarCounter + "x)");
+                updateBotBoardForPlayer();
+                botStatusLabel.setText("Radar revealed the enemy " + revealed + "!");
             }
-            radarButton.setText("Use Radar (" + radarCounter + "x)");
         });
 
         shieldButton = new Button("Use Shield (0x)");
