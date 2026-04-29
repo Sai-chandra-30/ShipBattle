@@ -5,6 +5,10 @@ public class ShipAbilities {
     private int carrierResetCooldown = 3;
     private int carrierCooldown = 0; 
 
+    private boolean submarineActive = false;
+    private int submarineResetCooldown = 5;
+    private int submarineCooldown = 0;
+
     private boolean frigateActive = false;
     private boolean frigateUsed = false;
 
@@ -45,6 +49,36 @@ public class ShipAbilities {
 
     public boolean getBattleshipActive() {
         return !sunkShips.contains("Battleship");
+    }
+
+    // Submarine
+    public boolean getSubmarineActive() {
+        return submarineActive;
+    }
+
+    public void toggleSubmarine() {
+        submarineActive = !submarineActive;
+    }
+
+    public int getSubmarineCooldown() {
+        return submarineCooldown;
+    }
+
+    public void decrementSubmarineCooldown() {
+        submarineCooldown--;
+    }
+
+    public void resetSubmarineCooldown() {
+        submarineCooldown = submarineResetCooldown;
+    }
+
+    public boolean[][] useSubmarine(int row, int col, boolean[][] markedBot) {
+        for (int i = -1; i < 3; i++) {
+            for (int j = -1; j < 3; j++) {
+                if (i + row >= 0 && j + col >= 0 && i + row < 10 && j + col < 10) markedBot[row + i][col + j] = true;
+            }
+        }
+        return markedBot;
     }
 
     // Frigate
