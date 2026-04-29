@@ -20,6 +20,9 @@ public class ShipAbilities {
 
     // Carrier
     public boolean getCarrierActive() {
+        if (sunkShips.contains("Carrier")) { //might not need this not sure
+            return false;
+        }
         return carrierActive;
     }
 
@@ -53,6 +56,9 @@ public class ShipAbilities {
 
     // Submarine
     public boolean getSubmarineActive() {
+        if (sunkShips.contains("Submarine")) { //we might not need these not sure
+            return false;
+        }
         return submarineActive;
     }
 
