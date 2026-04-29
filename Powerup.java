@@ -16,15 +16,248 @@ public class Powerup {
         //TO DO
     }
 
-    public static void doBlackout(){
-        //TO DO (Liam)
+    public static void doBlackout(Board playerBoard){
+        //For each cell...
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                //If it is marked as a miss, remove the mark
+                if (playerBoard.getCell(i, j) == Cell.MISS) {
+                    playerBoard.setCell(i, j, Cell.WATER);
+                }
+            }
+        }
     }
 
-    public static void doRebuild(){
-        //TO DO (Liam)
+    public static boolean doRebuild(Board initBoard, Board playerBoard){
+        //Count how many hits each type of ship has taken
+        int carrierHealth = 5;
+        int battleshipHealth = 4;
+        int destroyerHealth = 3;
+        int submarineHealth = 3;
+        int frigateHealth = 2;
+        Cell curr;
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (playerBoard.getCell(i, j) == Cell.HIT) {
+                    curr = initBoard.getCell(i, j);
+                    switch (curr) {
+                        case CARRIER:
+                            carrierHealth--;
+                            break;
+                        case BATTLESHIP:
+                            battleshipHealth--;
+                            break;
+                        case DESTROYER:
+                            destroyerHealth--;
+                            break;
+                        case SUBMARINE:
+                            submarineHealth--;
+                            break;
+                        case FRIGATE:
+                            frigateHealth--;
+                            break;
+                    }
+                }
+            }
+        }
+
+        //Decide which to rebuild off of priority
+        if (carrierHealth == 0) {
+            curr = Cell.CARRIER;
+        } else if (battleshipHealth == 0) {
+            curr = Cell.BATTLESHIP;
+        } else if (destroyerHealth == 0) {
+            curr = Cell.DESTROYER;
+        } else if (submarineHealth == 0) {
+            curr = Cell.SUBMARINE;
+        } else if (frigateHealth == 0) {
+            curr = Cell.FRIGATE;
+        } else {
+            return false; //If there are no sunk ships, Rebuild fails and does not consume the powerup
+        }
+        
+        //Rebuild the ship
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if ((playerBoard.getCell(i, j) == Cell.HIT) && (initBoard.getCell(i, j) == curr)) {
+                    playerBoard.setCell(i, j, curr);
+                }
+            }
+        }
+        return true;
     }
 
-    public static void doReposition(){
-        //TO DO (Liam)
+    public static void doReposition(Board initBoard, Board playerBoard){
+        //Count how many hits each type of ship has taken
+        int carrierHealth = 5;
+        int battleshipHealth = 4;
+        int destroyerHealth = 3;
+        int submarineHealth = 3;
+        int frigateHealth = 2;
+
+        int carrierPrio = 1;
+        int battleshipPrio = 1;
+        int destroyerPrio = 1;
+        int submarinePrio = 1;
+        int frigatePrio = 1;
+
+        Cell curr = Cell.WATER;
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (playerBoard.getCell(i, j) == Cell.HIT) {
+                    curr = initBoard.getCell(i, j);
+                    switch (curr) {
+                        case CARRIER:
+                            carrierHealth--;
+                            if (carrierHealth == 0) {
+                                carrierPrio = 0;
+                            } else {
+                                carrierPrio = 2;
+                            }
+                            break;
+                        case BATTLESHIP:
+                            battleshipHealth--;
+                            if (battleshipHealth == 0) {
+                                battleshipPrio = 0;
+                            } else {
+                                battleshipPrio = 2;
+                            }
+                            break;
+                        case DESTROYER:
+                            destroyerHealth--;
+                            if (destroyerHealth == 0) {
+                                destroyerPrio = 0;
+                            } else {
+                                destroyerPrio = 2;
+                            }
+                            break;
+                        case SUBMARINE:
+                            submarineHealth--;
+                            if (submarineHealth == 0) {
+                                submarinePrio = 0;
+                            } else {
+                                submarinePrio = 2;
+                            }
+                            break;
+                        case FRIGATE:
+                            frigateHealth--;
+                            if (frigateHealth == 0) {
+                                frigatePrio = 0;
+                            } else {
+                                frigatePrio = 2;
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        //Decide which to move off of priority and randomization
+        int usedPrio = 1;
+        if (carrierPrio == 2 || battleshipPrio == 2 || destroyerPrio == 2 || submarinePrio == 2 || frigatePrio == 2) {
+            usedPrio = 2;
+        }
+
+        int currLength = -1;
+        boolean keepGoing = true;
+        while (keepGoing) {
+            int i = (int)(Math.random() * 5);
+            switch (i) {
+                case 0:
+                    if (carrierPrio == usedPrio) {
+                        curr = Cell.CARRIER;
+                        currLength = 5;
+                        keepGoing = false;
+                    }
+                    break;
+                case 1:
+                    if (battleshipPrio == usedPrio) {
+                        curr = Cell.BATTLESHIP;
+                        currLength = 4;
+                        keepGoing = false;
+                    }
+                    break;
+                case 2:
+                    if (destroyerPrio == usedPrio) {
+                        curr = Cell.DESTROYER;
+                        currLength = 3;
+                        keepGoing = false;
+                    }
+                    break;
+                case 3:
+                    if (submarinePrio == usedPrio) {
+                        curr = Cell.SUBMARINE;
+                        currLength = 3;
+                        keepGoing = false;
+                    }
+                    break;
+                case 4:
+                    if (frigatePrio == usedPrio) {
+                        curr = Cell.FRIGATE;
+                        currLength = 2;
+                        keepGoing = false;
+                    }
+                    break;
+            }
+        }
+
+        //Find a valid location to move the ship to
+        keepGoing = true;
+        int row = -1;
+        int col = -1;
+        boolean isVertical = false;
+        while (keepGoing) {
+            row = (int)(Math.random() * 10);
+            col = (int)(Math.random() * 10);
+            if ((int)(Math.random() * 2) == 0) {
+                isVertical = true;
+            } else {
+                isVertical = false;
+            }
+
+            if (playerBoard.canPlaceShipPublic(row, col, currLength, isVertical)) {
+                keepGoing = false;
+            }
+        }
+        
+        //Remove existing ship from both the real board and the snapshot of the board from the start
+        int hitsTaken = 0;
+
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (initBoard.getCell(i, j) == curr) {
+                    if (playerBoard.getCell(i, j) == Cell.HIT) {
+                        hitsTaken++;
+                    }
+                    playerBoard.setCell(i, j, Cell.WATER);
+                    initBoard.setCell(i, j, Cell.WATER);
+                }
+            }
+        }
+        
+        //Place the ship in new location
+        if (isVertical) {
+            for (int i = 0; i < currLength; i++) {
+                initBoard.setCell(row + i, col, curr);
+                if (hitsTaken > 0) {
+                    playerBoard.setCell(row + i, col, Cell.HIT);
+                    hitsTaken--;
+                } else {
+                    playerBoard.setCell(row + i, col, curr);
+                }
+            }
+        } else {
+            for (int i = 0; i < currLength; i++) {
+                initBoard.setCell(row, col + i, curr);
+                if (hitsTaken > 0) {
+                    playerBoard.setCell(row, col + i, Cell.HIT);
+                    hitsTaken--;
+                } else {
+                    playerBoard.setCell(row, col + i, curr);
+                }
+            }
+        }
+
+        return;
     }
 }
