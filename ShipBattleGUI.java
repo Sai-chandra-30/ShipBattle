@@ -299,12 +299,13 @@ public class ShipBattleGUI extends Application {
                         "-fx-background-radius: 4; -fx-padding: 4 10;"
         );
         repositionButton.setOnAction(e -> {
-            Powerup.doReposition();
+            Powerup.doReposition(initialPlayerBoard, playerBoard);
             repositionCounter--;
             if(repositionCounter == 0){
                 repositionButton.setDisable(true);
             }
             repositionButton.setText("Use Reposition (" + repositionCounter + "x)");
+            updateBoard(playerBoard, playerButtons);
         });
 
         playerStatusLabel = new Label("");
