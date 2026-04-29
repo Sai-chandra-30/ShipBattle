@@ -20,6 +20,7 @@ public class ShipBattleGUI extends Application {
     private static final int BASE_FONT = 16;
     private static final int CELL_SIZE = 44;
     private static final int TRAY_CELL = 36;
+    private static final int ACTION_BTN_WIDTH = 180;
 
     private Board playerBoard = new Board();
     private Button[][] playerButtons = new Button[10][10];
@@ -325,6 +326,18 @@ public class ShipBattleGUI extends Application {
             repositionButton.setText("Use Reposition (" + repositionCounter + "x)");
             updateBoard(playerBoard, playerButtons);
         });
+
+        // Lock action button widths so long text doesn't shift the boards.
+        lockActionButtonWidth(carrierButton);
+        lockActionButtonWidth(frigateButton);
+        lockActionButtonWidth(submarineButton);
+        lockActionButtonWidth(radarButton);
+        lockActionButtonWidth(shieldButton);
+        lockActionButtonWidth(reinforcementsButton);
+        lockActionButtonWidth(communicationDisruptionButton);
+        lockActionButtonWidth(blackoutButton);
+        lockActionButtonWidth(rebuildButton);
+        lockActionButtonWidth(repositionButton);
 
         playerStatusLabel = new Label("");
         playerStatusLabel.setFont(Font.font("Georgia", FontWeight.BOLD, 13));
@@ -738,6 +751,9 @@ public class ShipBattleGUI extends Application {
         grid.setVgap(2);
         grid.setPadding(new Insets(4));
         grid.setStyle("-fx-background-color: #000000ff; -fx-background-radius: 4;");
+        // Prevent layout from stretching the board area horizontally/vertically.
+        grid.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        grid.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         for (int col = 0; col < 10; col++) {
             Label lbl = new Label(String.valueOf(col + 1));
@@ -780,6 +796,13 @@ public class ShipBattleGUI extends Application {
         }
 
         return grid;
+    }
+
+    private void lockActionButtonWidth(Button btn) {
+        btn.setMinWidth(ACTION_BTN_WIDTH);
+        btn.setPrefWidth(ACTION_BTN_WIDTH);
+        btn.setMaxWidth(ACTION_BTN_WIDTH);
+        btn.setWrapText(true);
     }
 
     // ── Drag Source: picking up a placed ship from the board ───────────────────
