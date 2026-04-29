@@ -510,6 +510,14 @@ public class ShipBattleGUI extends Application {
                 frigateButton.setText("Frigate Sunk");
                 frigateButton.setDisable(true);
             }
+            if (sunk.equals("Carrier")) {
+                carrierButton.setText("Carrier Sunk");
+                carrierButton.setDisable(true);
+            }
+            if (sunk.equals("Submarine")) {
+                submarineButton.setText("Submarine Sunk");
+                submarineButton.setDisable(true);
+            }
         } else if (hit) {
             playerStatusLabel.setText("BOT HIT YOUR SHIP!");
             addAdjacentTargets(target[0], target[1]);
