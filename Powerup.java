@@ -1,3 +1,6 @@
+import java.util.*;
+import  javafx.scene.control.Label;
+
 public class Powerup {
     
     //Reveal a random unsunk enemy ship. Returns the ship name, or null if all ships are sunk.
@@ -35,8 +38,33 @@ public class Powerup {
         return shipNames[pick];
     }
 
-    public static void doShield(){
-        //TO DO
+    public static void doShield(Board playerBoard, Label botStatusLabel){
+        //look for unsunken ships
+        ArrayList<Cell> types = new ArrayList<Cell>();
+        for(int i = 0; i < 10; i++) {
+            for(int j = 0; j < 10; j++) {
+                if(playerBoard.getCell(i, j) != Cell.HIT && playerBoard.getCell(i, j) != Cell.MISS && playerBoard.getCell(i, j) != Cell.WATER && !types.contains(playerBoard.getCell(i,j))) {
+                    types.add(playerBoard.getCell(i, j));
+                }
+            }
+        }
+        if(types.size() == 0) return;
+        int index = (int) Math.random() * types.size();
+        Cell chosen = types.get(index);
+        boolean[][] toShield = playerBoard.getShieldedPlayer();
+        for(int i = 0; i < 10; i++) {
+            for(int j = 0; j < 10; j++) {
+                if(playerBoard.getCell(i,j) == chosen){
+                    toShield[i][j] = true;
+                }
+            }
+        }
+        playerBoard.setShieldedPlayer(toShield);
+        String shipName = chosen.toString().substring(0,1) + chosen.toString().substring(1).toLowerCase();
+        botStatusLabel.setText("Shield has been applied to your " + shipName + "!");
+
+
+
     }
 
     public static void doReinforcements(){

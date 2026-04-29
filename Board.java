@@ -201,15 +201,51 @@ public class Board {
     }
 
     private String lastSunkShip = null;
+    //shield logic
+    private boolean blocked = false;
+    private boolean[][] shieldedPlayer = new boolean[10][10];
 
     public String getLastSunkShip() { return lastSunkShip; }
+
+    public boolean isShielded(int row, int col) {
+        return shieldedPlayer[row][col];
+    }
+    public boolean[][] getShieldedPlayer() {
+        return shieldedPlayer;
+    }
+    public void setShieldedPlayer(boolean[][] set){
+        shieldedPlayer = set;
+    }
+
+    public boolean getBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean block) {
+        blocked = block;
+    }
+
+    public void removeShieldFrom(int row, int col) {
+        Cell type = board[row][col];
+        for(int i = 0; i < 10; i++) {
+            for(int j = 0; j < 10; j++) {
+                if(type == board[i][j]) {
+                    shieldedPlayer[i][j] = false;
+                }
+            }
+        }
+    }
 
     // Fires at (row, col); returns true if it hit a ship. Sets lastSunkShip if a ship was fully sunk.
     public boolean fireAt(int row, int col) {
         Cell c = board[row][col];
         if (c == Cell.HIT || c == Cell.MISS) return false;
         lastSunkShip = null;
-        if (c != Cell.WATER) {
+        if (c != Cell.WATER  && shieldedPlayer[row][col]) {
+            blocked = true;
+            return false;
+        }
+        else if(c != Cell.WATER) {
             board[row][col] = Cell.HIT;
             boolean stillAlive = false;
             for (int i = 0; i < SIZE && !stillAlive; i++)

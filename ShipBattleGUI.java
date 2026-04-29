@@ -235,7 +235,8 @@ public class ShipBattleGUI extends Application {
                         "-fx-background-radius: 4; -fx-padding: 4 10;"
         );
         shieldButton.setOnAction(e -> {
-            Powerup.doShield();
+            Powerup.doShield(playerBoard, botStatusLabel);
+            updateBoard(playerBoard, playerButtons);
             shieldCounter--;
             if(shieldCounter == 0){
                 shieldButton.setDisable(true);
@@ -516,7 +517,6 @@ public class ShipBattleGUI extends Application {
         int[] target = pickBotTarget();
         boolean hit = playerBoard.fireAt(target[0], target[1]);
         updateBoard(playerBoard, playerButtons);
-
         String sunk = playerBoard.getLastSunkShip();
         if (sunk != null) {
             sunkShips.add(sunk);
@@ -538,6 +538,11 @@ public class ShipBattleGUI extends Application {
         } else if (hit) {
             playerStatusLabel.setText("BOT HIT YOUR SHIP!");
             addAdjacentTargets(target[0], target[1]);
+        } else if (playerBoard.getBlocked()) {
+            playerStatusLabel.setText("BOT HIT A SHIELDED SHIP! Shield has been consumed");
+            playerBoard.setBlocked(false);
+            playerBoard.removeShieldFrom(target[0], target[1]);
+            updateBoard(playerBoard, playerButtons);
         } else {
             playerStatusLabel.setText("BOT MISSED.");
         }
@@ -945,7 +950,8 @@ public class ShipBattleGUI extends Application {
             for (int col = 0; col < 10; col++) {
                 Cell cell = board.getCell(row, col);
                 Button btn = buttons[row][col];
-                btn.setText(cell.getSymbol());
+                if(playerBoard.isShielded(row, col)) btn.setText("Sh");
+                else btn.setText(cell.getSymbol());
                 btn.setStyle(
                     "-fx-background-color: " + cell.getColor() + ";" +
                     "-fx-text-fill: " + cell.getTextColor() + ";" +
