@@ -81,6 +81,13 @@ public class ShipBattleGUI extends Application {
     private Label playerStatusLabel;  // below player board — shows bot's action
     private Label botStatusLabel;     // below bot board — shows player's turn status
 
+    // Game-over UI
+    private Label gameOverLabel;
+    private Button playAgainButton;
+    private VBox gameOverBox;
+    private HBox boardsBox;
+    private VBox root;
+
     @Override
     public void start(Stage stage) {
 
@@ -119,24 +126,7 @@ public class ShipBattleGUI extends Application {
         shipTray.setPadding(new Insets(8, 0, 8, 0));
         shipTray.setPrefWrapLength(520);
         buildShipTrayItems();
-
-        shipTray.setOnDragOver(e -> {
-            if (e.getDragboard().hasString() && dragFromBoard)
-                e.acceptTransferModes(TransferMode.MOVE);
-            e.consume();
-        });
-        shipTray.setOnDragDropped(e -> {
-            boolean success = false;
-            if (e.getDragboard().hasString() && dragFromBoard && draggingShipName != null) {
-                playerBoard.removeShipAt(dragFromRow, dragFromCol);
-                updateBoard(playerBoard, playerButtons);
-                showInTray(draggingShipName);
-                success = true;
-            }
-            clearPreview();
-            e.setDropCompleted(success);
-            e.consume();
-        });
+        setupTrayDragHandlers();
 
         randomizeButton = new Button("RANDOMIZE");
         randomizeButton.setFont(Font.font("Georgia", FontWeight.BOLD, 12));
@@ -390,11 +380,30 @@ public class ShipBattleGUI extends Application {
 
         // ── Root layout ────────────────────────────────────────────────────────
 
-        HBox boardsBox = new HBox(40, playerSide, botSide);
+        boardsBox = new HBox(40, playerSide, botSide);
         boardsBox.setAlignment(Pos.TOP_CENTER);
         boardsBox.setPadding(new Insets(10, 24, 20, 24));
 
-        VBox root = new VBox(topBox, boardsBox);
+        gameOverLabel = new Label("");
+        gameOverLabel.setFont(Font.font("Georgia", FontWeight.BOLD, BASE_FONT * 2));
+        gameOverLabel.setWrapText(true);
+
+        playAgainButton = new Button("PLAY AGAIN");
+        playAgainButton.setFont(Font.font("Georgia", FontWeight.BOLD, 14));
+        playAgainButton.setStyle(
+            "-fx-background-color: #3a7bd5; -fx-text-fill: white;" +
+            "-fx-background-radius: 4; -fx-padding: 8 22;"
+        );
+        playAgainButton.setOnAction(e -> resetGame());
+
+        gameOverBox = new VBox(18, gameOverLabel, playAgainButton);
+        gameOverBox.setAlignment(Pos.CENTER);
+        gameOverBox.setPadding(new Insets(40, 24, 40, 24));
+        gameOverBox.setVisible(false);
+        gameOverBox.setManaged(false);
+
+        root = new VBox(topBox, boardsBox, gameOverBox);
+        root.setAlignment(Pos.TOP_CENTER);
         root.setStyle("-fx-background-color: #232222f5;");
 
         updateBoard(playerBoard, playerButtons);
@@ -477,9 +486,8 @@ public class ShipBattleGUI extends Application {
 
             if (hit) {
                 if (botBoard.allShipsSunk()) {
-                    playerStatusLabel.setText("");
-                    botStatusLabel.setText("YOU WIN! All bot ships sunk!");
                     gameStarted = false;
+                    showGameOver("YOU WIN! All bot ships sunk!", true);
                     return;
                 }
                 String sunk = botBoard.getLastSunkShip();
@@ -543,8 +551,8 @@ public class ShipBattleGUI extends Application {
         }
 
         if (playerBoard.allShipsSunk()) {
-            playerStatusLabel.setText("BOT WINS! All your ships are sunk.");
             gameStarted = false;
+            showGameOver("YOU LOSE! All your ships are sunk.", false);
             return;
         }
 
@@ -803,6 +811,107 @@ public class ShipBattleGUI extends Application {
         btn.setPrefWidth(ACTION_BTN_WIDTH);
         btn.setMaxWidth(ACTION_BTN_WIDTH);
         btn.setWrapText(true);
+    }
+
+    private void setupTrayDragHandlers() {
+        shipTray.setOnDragOver(e -> {
+            if (e.getDragboard().hasString() && dragFromBoard)
+                e.acceptTransferModes(TransferMode.MOVE);
+            e.consume();
+        });
+        shipTray.setOnDragDropped(e -> {
+            boolean success = false;
+            if (e.getDragboard().hasString() && dragFromBoard && draggingShipName != null) {
+                playerBoard.removeShipAt(dragFromRow, dragFromCol);
+                updateBoard(playerBoard, playerButtons);
+                showInTray(draggingShipName);
+                success = true;
+            }
+            clearPreview();
+            e.setDropCompleted(success);
+            e.consume();
+        });
+    }
+
+    private void showGameOver(String message, boolean isWin) {
+        gameOverLabel.setText(message);
+        gameOverLabel.setTextFill(isWin ? Color.LIMEGREEN : Color.RED);
+        gameOverLabel.setAlignment(Pos.CENTER);
+        boardsBox.setVisible(false);
+        boardsBox.setManaged(false);
+        gameOverBox.setVisible(true);
+        gameOverBox.setManaged(true);
+    }
+
+    private void resetGame() {
+        GameManager.GuiState state = GameManager.newGuiState();
+        playerBoard = state.playerBoard;
+        botBoard = state.botBoard;
+        initialPlayerBoard = state.initialPlayerBoard;
+        markedBot = state.markedBot;
+        sunkShips = state.sunkShips;
+        abilities = state.abilities;
+
+        radarCounter = state.radarCounter;
+        shieldCounter = state.shieldCounter;
+        reinforcementsCounter = state.reinforcementsCounter;
+        communicationDisruptionCounter = state.communicationDisruptionCounter;
+        blackoutCounter = state.blackoutCounter;
+        rebuildCounter = state.rebuildCounter;
+        repositionCounter = state.repositionCounter;
+
+        botTargetQueue.clear();
+
+        gameStarted = false;
+        playerTurn = true;
+        isVertical = false;
+        draggingShipName = null;
+        dragFromBoard = false;
+        dragFromRow = dragFromCol = -1;
+        dragIsVertical = false;
+        clearPreview();
+
+        orientationToggle.setDisable(false);
+        orientationToggle.setText("HORIZONTAL");
+        randomizeButton.setDisable(false);
+        startButton.setDisable(false);
+
+        carrierButton.setDisable(true);
+        carrierButton.setText("Use Carrier Ability");
+        frigateButton.setDisable(true);
+        frigateButton.setText("Use Frigate Ability");
+        submarineButton.setDisable(true);
+        submarineButton.setText("Use Submarine Nuclear Ability");
+
+        radarButton.setDisable(true);
+        radarButton.setText("Use Radar (0x)");
+        shieldButton.setDisable(true);
+        shieldButton.setText("Use Shield (0x)");
+        reinforcementsButton.setDisable(true);
+        reinforcementsButton.setText("Use Reinforcements (0x)");
+        communicationDisruptionButton.setDisable(true);
+        communicationDisruptionButton.setText("Use Communication Disruption (0x)");
+        blackoutButton.setDisable(true);
+        blackoutButton.setText("Use Blackout (0x)");
+        rebuildButton.setDisable(true);
+        rebuildButton.setText("Use Rebuild (0x)");
+        repositionButton.setDisable(true);
+        repositionButton.setText("Use Reposition (0x)");
+
+        playerStatusLabel.setText("");
+        botStatusLabel.setText("");
+
+        buildShipTrayItems();
+        setupTrayDragHandlers();
+
+        setBotBoardEnabled(false);
+        updateBoard(playerBoard, playerButtons);
+        updateBotBoardForPlayer();
+
+        gameOverBox.setVisible(false);
+        gameOverBox.setManaged(false);
+        boardsBox.setVisible(true);
+        boardsBox.setManaged(true);
     }
 
     // ── Drag Source: picking up a placed ship from the board ───────────────────

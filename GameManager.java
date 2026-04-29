@@ -1,9 +1,73 @@
 import java.util.Scanner;
+import java.util.HashSet;
+import java.util.Set;
 
 public class GameManager {
     public static int playerHP = 17;
     public static int botHP = 17;
     public static Scanner scnr = new Scanner(System.in);
+
+    // GUI: fresh game state factory (keeps restart logic out of the UI)
+    public static class GuiState {
+        public final Board playerBoard;
+        public final Board botBoard;
+        public final Board initialPlayerBoard;
+        public final boolean[][] markedBot;
+        public final Set<String> sunkShips;
+        public final ShipAbilities abilities;
+
+        public final int radarCounter;
+        public final int shieldCounter;
+        public final int reinforcementsCounter;
+        public final int communicationDisruptionCounter;
+        public final int blackoutCounter;
+        public final int rebuildCounter;
+        public final int repositionCounter;
+
+        public GuiState(
+            Board playerBoard,
+            Board botBoard,
+            Board initialPlayerBoard,
+            boolean[][] markedBot,
+            Set<String> sunkShips,
+            ShipAbilities abilities,
+            int radarCounter,
+            int shieldCounter,
+            int reinforcementsCounter,
+            int communicationDisruptionCounter,
+            int blackoutCounter,
+            int rebuildCounter,
+            int repositionCounter
+        ) {
+            this.playerBoard = playerBoard;
+            this.botBoard = botBoard;
+            this.initialPlayerBoard = initialPlayerBoard;
+            this.markedBot = markedBot;
+            this.sunkShips = sunkShips;
+            this.abilities = abilities;
+
+            this.radarCounter = radarCounter;
+            this.shieldCounter = shieldCounter;
+            this.reinforcementsCounter = reinforcementsCounter;
+            this.communicationDisruptionCounter = communicationDisruptionCounter;
+            this.blackoutCounter = blackoutCounter;
+            this.rebuildCounter = rebuildCounter;
+            this.repositionCounter = repositionCounter;
+        }
+    }
+
+    public static GuiState newGuiState() {
+        Set<String> sunkShips = new HashSet<>();
+        return new GuiState(
+            new Board(),
+            new Board(),
+            new Board(),
+            new boolean[10][10],
+            sunkShips,
+            new ShipAbilities(sunkShips),
+            0, 0, 0, 0, 0, 0, 0
+        );
+    }
 
     public static void playGame(Board playerBoard, Board botBoard) {
         while(playerHP > 0 && botHP > 0) {
