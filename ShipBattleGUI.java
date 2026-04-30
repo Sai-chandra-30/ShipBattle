@@ -242,7 +242,7 @@ public class ShipBattleGUI extends Application {
                         "-fx-background-radius: 4; -fx-padding: 4 10;"
         );
         reinforcementsButton.setOnAction(e -> {
-            Powerup.doReinforcements();
+            Powerup.doReinforcements(sunkShips, abilities);
             reinforcementsCounter--;
             if(reinforcementsCounter == 0){
                 reinforcementsButton.setDisable(true);
