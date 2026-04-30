@@ -67,8 +67,17 @@ public class Powerup {
 
     }
 
-    public static void doReinforcements(){
-        //TO DO
+    public static void doReinforcements(Set<String> sunkShips, ShipAbilities abilities){
+        //resets the cooldown of all ship abilities as long as the ship is still alive.
+        if (!sunkShips.contains("Carrier")) {
+            abilities.resetCarrierCooldown();
+        }
+        if (!sunkShips.contains("Submarine")) {
+            abilities.resetSubmarineCooldown();
+        }
+        if (!sunkShips.contains("Frigate")) {
+            abilities.toggleFrigate();
+        }
     }
 
     public static void doCommunicationDisruption(){
